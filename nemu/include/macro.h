@@ -30,7 +30,7 @@
 
 // macro concatenation
 #define concat_temp(x, y) x ## y
-#define concat(x, y) concat_temp(x, y)
+#define concat(x, y) concat_temp(x, y)  // 提供了一层间接性，这样不会把 foo##bar 替换成 A##B
 #define concat3(x, y, z) concat(concat(x, y), z)
 #define concat4(x, y, z, w) concat3(concat(x, y), z, w)
 #define concat5(x, y, z, v, w) concat4(concat(x, y), z, v, w)
