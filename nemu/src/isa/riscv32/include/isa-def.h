@@ -19,14 +19,14 @@
 #include <common.h>
 
 typedef struct {
-  word_t gpr[MUXDEF(CONFIG_RVE, 16, 32)];
+  word_t gpr[MUXDEF(CONFIG_RVE, 16, 32)]; // 寄存器数组，存放寄存器具体的数据
   vaddr_t pc;
 } MUXDEF(CONFIG_RV64, riscv64_CPU_state, riscv32_CPU_state);
 
 // decode
 typedef struct {
   union {
-    uint32_t val;
+    uint32_t val; //当前指令的二进制值
   } inst;
 } MUXDEF(CONFIG_RV64, riscv64_ISADecodeInfo, riscv32_ISADecodeInfo);
 

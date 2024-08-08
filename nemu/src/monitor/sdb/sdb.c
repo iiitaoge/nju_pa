@@ -43,7 +43,7 @@ static char* rl_gets() {
 }
 
 static int cmd_c(char *args) {
-  cpu_exec(-1);
+  cpu_exec(-1); // -1 会作为 
   return 0;
 }
 
@@ -55,6 +55,37 @@ static int cmd_q(char *args) {
 
 static int cmd_help(char *args);
 
+// 单步执行
+static int cmd_si(char *args)
+{
+  // 使用 strtoull 将字符串转换为无符号长整型
+  uint64_t value = strtoull(args, NULL, 10);
+  cpu_exec(value);
+  return 0;
+}
+
+static int cmd_info(char *args)
+{
+  if (strcmp(args, "r") == 0) {
+        isa_reg_display();
+    } else if (strcmp(args, "w") == 0) {
+        printf("该功能暂未实现\n");
+    } else {
+        printf("没有这个info命令\n");
+    }
+  return 0;
+}
+
+// 扫描内存
+static int cmd_x(char *args)
+{
+  // 进行参数分离
+  char *n = strtok(args, " ");  // 要打印的字节数
+  char *EXPR = n + strlen(n) + 1; // 表达式的起始地址
+  
+  // TODO 会求表达式的地址后来做
+  return 0;
+}
 static struct {
   const char *name;
   const char *description;
@@ -63,6 +94,10 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
+  // 以下都为自己补充的命令
+  { "si", "程序单步执行 N 条指令后停止", cmd_si},
+  { "info", "info r ：打印寄存器的值， info w ：打印监视点信息", cmd_info },
+  { "x", "x N EXPR ：求出表达式EXPR的值, 将结果作为起始内存地址, 以十六进制形式输出连续的N个4字节", cmd_x },
 
   /* TODO: Add more commands */
 
@@ -113,7 +148,7 @@ void sdb_mainloop() {
     /* treat the remaining string as the arguments,
      * which may need further parsing
      */
-    char *args = cmd + strlen(cmd) + 1;
+    char *args = cmd + strlen(cmd) + 1; // 1 是空格的长度
     if (args >= str_end) {
       args = NULL;
     }

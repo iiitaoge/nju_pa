@@ -16,6 +16,7 @@
 #include <isa.h>
 #include "local-include/reg.h"
 
+// 寄存器的名称数组
 const char *regs[] = {
   "$0", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
   "s0", "s1", "a0", "a1", "a2", "a3", "a4", "a5",
@@ -23,7 +24,13 @@ const char *regs[] = {
   "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"
 };
 
+// 输出寄存器的值
 void isa_reg_display() {
+  for (int i = 0; i < 32; i++)
+  {
+    printf("%-15s %#x %20u\n", regs[i], cpu.gpr[i], cpu.gpr[i]);
+  }
+  printf("%-15s %#x %20u\n", "pc", cpu.pc, cpu.pc);
 }
 
 word_t isa_reg_str2val(const char *s, bool *success) {
