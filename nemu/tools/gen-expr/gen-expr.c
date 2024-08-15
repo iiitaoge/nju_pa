@@ -31,9 +31,59 @@ static char *code_format =
 "  return 0; "
 "}";
 
-static void gen_rand_expr() {
-  buf[0] = '\0';
+int token_count = 0; // 用于跟踪当前表达式中的 tokens 数量
+
+static void gen_num() {
+    int num = rand() % 100; // 生成 0 到 99 之间的整数
+    char buffer[20];
+    sprintf(buffer, "%d", num); // 转换为字符串形式
+    strcat(buf, buffer); // 将数字附加到表达式缓冲区中
+    token_count++; // 增加 token 计数
 }
+
+static void gen_rand_op() {
+    char ops[] = {'+', '-', '*', '/'};
+    char op = ops[rand() % 4]; // 随机选择一个操作符
+    strcat(buf, " ");
+    strncat(buf, &op, 1); // 将操作符附加到表达式缓冲区中
+    strcat(buf, " ");
+    token_count++; // 增加 token 计数
+}
+
+static void gen_rand_expr(int remaining_tokens) {
+    if (remaining_tokens == 1) {
+        // 如果只剩下一个 token，必须生成一个数字
+        gen_num();
+        return;
+    }
+
+    int choice = rand() % 3;
+    if (choice == 0) {
+        // 生成一个数字
+        gen_num();
+    } else if (choice == 1 && remaining_tokens >= 3) {
+        // 生成带括号的表达式，至少需要3个tokens
+        strcat(buf, "(");
+        token_count++;
+        gen_rand_expr(remaining_tokens - 2); // 内部表达式消耗 tokens，括号消耗 2 个
+        strcat(buf, ")");
+        token_count++;
+    } else if (remaining_tokens >= 3) {
+        // 生成带操作符的表达式，至少需要3个tokens
+        int tokens_left_for_right_expr = (remaining_tokens - 1) / 2;
+        int tokens_left_for_left_expr = remaining_tokens - 1 - tokens_left_for_right_expr;
+        gen_rand_expr(tokens_left_for_left_expr); // 生成左侧表达式
+        gen_rand_op(); // 生成操作符
+        gen_rand_expr(tokens_left_for_right_expr); // 生成右侧表达式
+    } else {
+        gen_num(); // 其他情况下生成一个数字
+    }
+}
+
+// static void gen_rand_expr() 
+// {
+//   buf[0] = '\0';
+// }
 
 int main(int argc, char *argv[]) {
   int seed = time(0);
@@ -44,7 +94,7 @@ int main(int argc, char *argv[]) {
   }
   int i;
   for (i = 0; i < loop; i ++) {
-    gen_rand_expr();
+    gen_rand_expr(32);
 
     sprintf(code_buf, code_format, buf);
 

@@ -33,6 +33,19 @@ void isa_reg_display() {
   printf("%-15s %#x %20u\n", "pc", cpu.pc, cpu.pc);
 }
 
+// 取寄存器的值
 word_t isa_reg_str2val(const char *s, bool *success) {
-  return 0;
+  char *a = "pc";
+  if (strcmp(a , s) == 0)  // 取出pc
+  {
+    return cpu.pc;
+  }
+  for (int i = 0; i < 32; i++)  // 取出通用寄存器
+  {
+    if (strcmp(regs[i],s) == 0)
+    {
+      return cpu.gpr[i];
+    }
+  }
+  return -1;
 }

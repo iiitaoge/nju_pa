@@ -18,6 +18,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
+#include <memory/paddr.h> // 操作内存
 
 static int is_batch_mode = false;
 
@@ -82,10 +83,49 @@ static int cmd_x(char *args)
   // 进行参数分离
   char *n = strtok(args, " ");  // 要打印的字节数
   char *EXPR = n + strlen(n) + 1; // 表达式的起始地址
+  bool success = false;
+  word_t address = expr(EXPR,&success);  // 求出的表达式地址
+
+  int len = atoi(n);
+  if (len >= 4) // 先把4的整数倍长度处理了
+  {
+    int i = 0;
+    for (; i <= len - 4; i = i + 4)
+    {
+      address += i;
+      printf("%#010x ", paddr_read(address, 4));
+    }
+    address += i;
+    len = len - i;
+  }
+  switch (len)  // 此时只剩下四种可能， 1，2，3，0
+  {
+  case 1:
+    printf("%#04x ", paddr_read(address, 1));
+    break;
   
+  case 2:
+    printf("%#06x ", paddr_read(address, 2));
+
+  case 3:
+    printf("%#08x ", paddr_read(address, 2) + paddr_read(address + 2, 1) * 16 * 16 * 16 * 16);
+    // printf("%#04x ", paddr_read(address + 2, 1));
+
+  default:
+    break;
+  }
+  printf("\n");
   // TODO 会求表达式的地址后来做
   return 0;
 }
+
+static int cmd_p(char *args)
+{
+  bool success = true;  // 定义一个实际的 bool 变量并初始化为 true
+  printf("%u\n", expr(args, &success)); // 传递 success 的地址
+  return 0;
+}
+
 static struct {
   const char *name;
   const char *description;
@@ -97,8 +137,10 @@ static struct {
   // 以下都为自己补充的命令
   { "si", "程序单步执行 N 条指令后停止", cmd_si},
   { "info", "info r ：打印寄存器的值， info w ：打印监视点信息", cmd_info },
-  { "x", "x N EXPR ：求出表达式EXPR的值, 将结果作为起始内存地址, 以十六进制形式输出连续的N个4字节", cmd_x },
+  { "x", "x N EXPR : 求出表达式EXPR的值, 将结果作为起始内存地址, 以十六进制形式输出连续的N个4字节", cmd_x },
+  { "p", "打印表达式的值", cmd_p}
 
+  // { "t", "测试专用", cmd_test},
   /* TODO: Add more commands */
 
 };
