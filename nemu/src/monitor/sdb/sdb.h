@@ -20,4 +20,8 @@
 
 word_t expr(char *e, bool *success);
 
+void print_watch_pointer();
+void sdb_new_wp(char *args);
+void delete_wp(char *args);
+
 #endif

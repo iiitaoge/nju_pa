@@ -65,15 +65,21 @@ static int cmd_si(char *args)
   return 0;
 }
 
+// 
 static int cmd_info(char *args)
 {
-  if (strcmp(args, "r") == 0) {
-        isa_reg_display();
-    } else if (strcmp(args, "w") == 0) {
-        printf("该功能暂未实现\n");
-    } else {
-        printf("没有这个info命令\n");
-    }
+  if (strcmp(args, "r") == 0) 
+  {
+    isa_reg_display();
+  } 
+  else if (strcmp(args, "w") == 0) 
+  {
+    print_watch_pointer();
+  } 
+  else 
+  {
+    printf("没有这个info命令\n");
+  }
   return 0;
 }
 
@@ -115,14 +121,29 @@ static int cmd_x(char *args)
     break;
   }
   printf("\n");
-  // TODO 会求表达式的地址后来做
   return 0;
 }
 
+// 打印表达式值
 static int cmd_p(char *args)
 {
   bool success = true;  // 定义一个实际的 bool 变量并初始化为 true
   printf("%u\n", expr(args, &success)); // 传递 success 的地址
+  return 0;
+}
+
+// 创建监视点
+static int cmd_w(char *args)
+{
+  sdb_new_wp(args);
+  paddr_write(0x80000000, 4, 333);
+  return 0;
+}
+
+// 删除监视点
+static int cmd_d(char *args)
+{
+  delete_wp(args);
   return 0;
 }
 
@@ -138,8 +159,9 @@ static struct {
   { "si", "程序单步执行 N 条指令后停止", cmd_si},
   { "info", "info r ：打印寄存器的值， info w ：打印监视点信息", cmd_info },
   { "x", "x N EXPR : 求出表达式EXPR的值, 将结果作为起始内存地址, 以十六进制形式输出连续的N个4字节", cmd_x },
-  { "p", "打印表达式的值", cmd_p}
-
+  { "p", "打印表达式的值", cmd_p},
+  { "w", "w *0x80000000 创建监视点", cmd_w},
+  { "d", "d 2 删除指定序号监视点", cmd_d},
   // { "t", "测试专用", cmd_test},
   /* TODO: Add more commands */
 
