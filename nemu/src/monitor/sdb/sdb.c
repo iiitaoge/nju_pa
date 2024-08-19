@@ -136,7 +136,6 @@ static int cmd_p(char *args)
 static int cmd_w(char *args)
 {
   sdb_new_wp(args);
-  paddr_write(0x80000000, 4, 333);
   return 0;
 }
 
