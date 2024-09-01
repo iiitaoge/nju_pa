@@ -128,7 +128,10 @@ static int cmd_x(char *args)
 static int cmd_p(char *args)
 {
   bool success = true;  // 定义一个实际的 bool 变量并初始化为 true
-  printf("%u\n", expr(args, &success)); // 传递 success 的地址
+  if (strcmp(args, "$pc") == 0)
+    printf("%#x\n", expr(args, &success));
+  else
+    printf("%u\n", expr(args, &success)); // 传递 success 的地址
   return 0;
 }
 

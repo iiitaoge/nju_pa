@@ -38,14 +38,17 @@ word_t isa_reg_str2val(const char *s, bool *success) {
   char *a = "pc";
   if (strcmp(a , s) == 0)  // 取出pc
   {
+    *success = true;
     return cpu.pc;
   }
   for (int i = 0; i < 32; i++)  // 取出通用寄存器
   {
     if (strcmp(regs[i],s) == 0)
     {
+      *success = true;
       return cpu.gpr[i];
     }
   }
+  *success = false;
   return -1;
 }

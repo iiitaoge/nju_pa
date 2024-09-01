@@ -116,7 +116,10 @@ static void free_wp(int NO)  // 参数为序号
 // 打印监视点
 void print_watch_pointer()
 {
-  assert(head);
+  // if (!head)
+  // {
+  //   printf("没有监视点\n");
+  // }
   WP* temp = head;
   while (temp != NULL)
   {

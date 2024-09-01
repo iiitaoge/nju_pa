@@ -36,7 +36,7 @@ void device_update();
 
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
-  if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }
+  if (CONFIG_ITRACE_COND) { log_write("%s\n", _this->logbuf); } // 把 ITRACE_COND 换成 CONFIG_ITRACE_COND
 #endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
@@ -50,8 +50,8 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 static void exec_once(Decode *s, vaddr_t pc) {
   s->pc = pc;
   s->snpc = pc;
-  isa_exec_once(s);
-  cpu.pc = s->dnpc;
+  isa_exec_once(s); // 取出了二进制指令
+  cpu.pc = s->dnpc; // 这里很坑，要在译码阶段改变dnpc的值，而非pc
 #ifdef CONFIG_ITRACE
   char *p = s->logbuf;
   p += snprintf(p, sizeof(s->logbuf), FMT_WORD ":", s->pc);

@@ -57,7 +57,7 @@ static struct rule {
   {"/", '/'},           // divide
   {"\\(", '('},         // left (
   {"\\)", ')'},         // right (
-  {"\\$((ra)|(sp)|(gp)|(tp)|(t[0-6])|(s([0-9]|1[0-1]))|(a[0-7])|0)", TK_REGS},  // 匹配寄存器
+  {"\\$((pc)|(ra)|(sp)|(gp)|(tp)|(t[0-6])|(s([0-9]|1[0-1]))|(a[0-7])|0)", TK_REGS},  // 匹配寄存器
 };
 
 #define NR_REGEX ARRLEN(rules)

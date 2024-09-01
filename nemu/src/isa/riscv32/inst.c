@@ -23,7 +23,7 @@
 #define Mw vaddr_write
 
 enum {
-  TYPE_I, TYPE_U, TYPE_S,
+  TYPE_I, TYPE_U, TYPE_S, TYPE_J, TYPE_R, TYPE_B,
   TYPE_N, // none
 };
 
@@ -32,6 +32,20 @@ enum {
 #define immI() do { *imm = SEXT(BITS(i, 31, 20), 12); } while(0)
 #define immU() do { *imm = SEXT(BITS(i, 31, 12), 20) << 12; } while(0)
 #define immS() do { *imm = (SEXT(BITS(i, 31, 25), 7) << 5) | BITS(i, 11, 7); } while(0)
+// 自己添加的
+#define immJ() do { \
+    *imm = (SEXT(BITS(i, 31, 31), 1) << 20) | \
+           (BITS(i, 19, 12) << 12) | \
+           (BITS(i, 20, 20) << 11) | \
+           (BITS(i, 30, 21) << 1); \
+} while(0)
+
+#define immB() do { \
+    *imm = (SEXT(BITS(i, 31, 31), 1) << 12) | \
+           (BITS(i, 7, 7) << 11) | \
+           (BITS(i, 30, 25) << 5) | \
+           (BITS(i, 11, 8) << 1); \
+} while(0)
 
 static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_t *imm, int type) {
   uint32_t i = s->isa.inst.val;
@@ -42,6 +56,8 @@ static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_
     case TYPE_I: src1R();          immI(); break;
     case TYPE_U:                   immU(); break;
     case TYPE_S: src1R(); src2R(); immS(); break;
+    case TYPE_J:                   immJ(); break;
+    case TYPE_B: src1R(); src2R(); immB(); break;
   }
 }
 
@@ -62,7 +78,20 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 000 ????? 01000 11", sb     , S, Mw(src1 + imm, 1, src2));
 
   INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10))); // R(10) is $a0
+
+  // 以下都是自己添加的
+  INSTPAT("??????? ????? ????? 000 ????? 00100 11", addi   , I, R(rd) = src1 + imm);
+  INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal    , J, R(rd) = s->pc + 4; s->dnpc = s->pc + imm);
+  INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr   , I, 
+         uint32_t t = s->pc + 4; // 防止rs1和rd是同一个寄存器
+         s->dnpc = (src1 + imm) & -1;
+         R(rd) = t);
+  INSTPAT("??????? ????? ????? 010 ????? 01000 11", sw     , S, Mw(src1 + imm, 4, src2));
+  
+  // 这玩意要放最后面，不管机器码是什么都能匹配
   INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv    , N, INV(s->pc));
+
+
   INSTPAT_END();
 
   R(0) = 0; // reset $zero to 0
