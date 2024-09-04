@@ -43,7 +43,8 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 
 // 监视点
 #ifdef CONFIG_WATCHPOINT
-  print_watch_pointer();
+  bool is_value_new = print_watch_pointer();
+  if (is_value_new) puts(_this->logbuf);
 #endif
 }
 

@@ -114,26 +114,23 @@ static void free_wp(int NO)  // 参数为序号
 }
 
 // 打印监视点
-void print_watch_pointer()
+bool print_watch_pointer()
 {
-  // if (!head)
-  // {
-  //   printf("没有监视点\n");
-  // }
   WP* temp = head;
+  bool is_value_new = false;
   while (temp != NULL)
   {
     bool success = false;
     word_t new_wp_value = expr(wp_address[temp->NO], &success);
-    if (new_wp_value == temp->value)
-      printf("\nwatchpoint %d\nvalue : %u\n", temp->NO, temp->value);
-    else
+    if (new_wp_value != temp->value)
     {
       printf("\nwatchpoint %d\nold value : %u\nnew value : %u\n", temp->NO, temp->value, new_wp_value);
+      is_value_new = true;
       temp->value = new_wp_value; // 更新value
     }
     temp = temp->next;
   }
+  return is_value_new;
 }
 
 // 外部文件调用new_wp()的接口
