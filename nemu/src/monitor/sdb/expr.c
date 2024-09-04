@@ -23,7 +23,7 @@
 
 static bool check_parentheses(int p, int q);
 static bool check_small(int p, int q);
-static void print_tokens();
+// static void print_tokens();
 static word_t eval(int p, int q);
 static int find_main_operator(int p, int q);
 static void pointer_derefenrece();
@@ -106,8 +106,8 @@ static bool make_token(char *e) {
         char *substr_start = e + position;
         int substr_len = pmatch.rm_eo;
 
-        Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
-            i, rules[i].regex, position, substr_len, substr_len, substr_start);
+        // Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
+        //     i, rules[i].regex, position, substr_len, substr_len, substr_start);
 
         position += substr_len;
 
@@ -206,7 +206,7 @@ word_t expr(char *e, bool *success) {
     *success = false;
     return 0;
   }
-  print_tokens(0, nr_token - 1);
+  // print_tokens(0, nr_token - 1);
   // bool a = check_parentheses(0, nr_token - 1);
   // if (a)
   // {
@@ -231,14 +231,14 @@ word_t expr(char *e, bool *success) {
   return eval(0, nr_token - 1);
 }
 
-static void print_tokens(int l, int r) // 打印 tokens 数组，检查
-{
-  for (int i = l; i <= r; i++)
-  {
-    printf("%s ", tokens[i].str);
-  }
-  printf("\n");
-}
+// static void print_tokens(int l, int r) // 打印 tokens 数组，检查
+// {
+//   for (int i = l; i <= r; i++)
+//   {
+//     printf("%s ", tokens[i].str);
+//   }
+//   printf("\n");
+// }
 
 // 将解引用和乘号区分
 static void pointer_derefenrece()
