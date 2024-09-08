@@ -29,6 +29,49 @@ int atoi(const char* nptr) {
   return x;
 }
 
+// 整数转换字符串
+char *itoa(int num) {
+    static char str[32];  // 足够容纳最大的整数和负号
+    int i = 0, is_negative = 0;
+    
+    // 处理0这个特殊情况
+    if (num == 0) {
+        str[i++] = '0';
+    }
+
+    // 处理负数
+    if (num < 0) {
+        is_negative = 1;
+        num = -num;
+    }
+
+    // 转换过程
+    while (num != 0) {
+        str[i++] = (num % 10) + '0';
+        num /= 10;
+    }
+
+    // 如果是负数，要加负号
+    if (is_negative) {
+        str[i++] = '-';
+    }
+
+    str[i] = '\0';  // 设置字符串终点
+
+    // 因为转换时候是从高到低的，所以要反转过来
+    int start = 0;
+    int end = i - 1;
+    while (start < end) {
+        char temp = str[start];
+        str[start] = str[end];
+        str[end] = temp;
+        start++;
+        end--;
+    }
+
+    return str;
+}
+
 void *malloc(size_t size) {
   // On native, malloc() will be called during initializaion of C runtime.
   // Therefore do not call panic() here, else it will yield a dead recursion:
