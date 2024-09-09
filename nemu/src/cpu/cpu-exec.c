@@ -31,6 +31,33 @@ CPU_state cpu = {};
 uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
+static char * iringbuf[5];  // 环形缓冲区
+
+static void up_buf(char *strlog) // 更新iringbuf
+{
+  for (int i = 0; i < 4; i++)
+  {
+    iringbuf[i] = iringbuf[i + 1];
+  }
+  iringbuf[4] = strlog;
+}
+
+static void printf_buf()
+{
+  for (int i = 0; i < 5; i++)
+  {
+    if (iringbuf[i] != NULL)  // 检查指针是否为空
+    {
+      printf("%s\n", iringbuf[i]);
+    }
+    else
+    {
+      printf("(null)\n");  // 打印一个占位符，指示此位置为空
+    }
+  }
+}
+
+
 
 void device_update();
 
@@ -40,6 +67,9 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
+
+  char *strlog = strdup(_this->logbuf); 
+  up_buf(strlog); // 更新 up_buf
 
 // 监视点
 #ifdef CONFIG_WATCHPOINT
@@ -55,12 +85,12 @@ static void exec_once(Decode *s, vaddr_t pc) {
   cpu.pc = s->dnpc; // 这里很坑，要在译码阶段改变dnpc的值，而非pc
 #ifdef CONFIG_ITRACE
   char *p = s->logbuf;
-  p += snprintf(p, sizeof(s->logbuf), FMT_WORD ":", s->pc);
+  p += snprintf(p, sizeof(s->logbuf), FMT_WORD ":", s->pc); // 记录 pc 的值
   int ilen = s->snpc - s->pc;
   int i;
   uint8_t *inst = (uint8_t *)&s->isa.inst.val;
   for (i = ilen - 1; i >= 0; i --) {
-    p += snprintf(p, 4, " %02x", inst[i]);
+    p += snprintf(p, 4, " %02x", inst[i]);  // 记录 指令 的值
   }
   int ilen_max = MUXDEF(CONFIG_ISA_x86, 8, 4);
   int space_len = ilen_max - ilen;
@@ -102,6 +132,7 @@ static void statistic() {
 void assert_fail_msg() {
   isa_reg_display();
   statistic();
+  printf_buf();
 }
 
 /* Simulate how the CPU works. */

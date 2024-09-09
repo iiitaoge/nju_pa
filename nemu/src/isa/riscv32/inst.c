@@ -154,7 +154,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("0000001 ????? ????? 100 ????? 01100 11", div     , R, R(rd) = (int32_t)src1 / (int32_t)src2);
   INSTPAT("0000001 ????? ????? 110 ????? 01100 11", rem     , R, R(rd) = (int32_t)src1 % (int32_t)src2);
   INSTPAT("0000001 ????? ????? 001 ????? 01100 11", mulh    , R, 
-    int64_t result_64 = (int64_t)(int32_t)src1 * (int64_t)(int32_t)src2;
+    int64_t result_64 = (int64_t)(int32_t)src1 * (int64_t)(int32_t)src2;  // 最抽象的一段代码
     int32_t result_32 = (int32_t)(result_64 >> 32);
     R(rd) = result_32;
   );
