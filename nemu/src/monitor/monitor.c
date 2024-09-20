@@ -15,6 +15,10 @@
 
 #include <isa.h>
 #include <memory/paddr.h>
+#include <libelf.h>
+#include <gelf.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 void init_rand();
 void init_log(const char *log_file);
@@ -44,7 +48,76 @@ void sdb_set_batch_mode();
 static char *log_file = NULL;
 static char *diff_so_file = NULL;
 static char *img_file = NULL;
+static char *elf_file = NULL; // 保存 elf 文件
 static int difftest_port = 1234;
+
+uint32_t func_amount = 0;   // 函数的个数
+struct function_trace functions[100];   // 假设有100个函数 
+
+void parse_elf(const char *filename) {
+    int fd = open(filename, O_RDONLY);
+    if (fd < 0) {
+        perror("open");
+        exit(EXIT_FAILURE);
+    }
+
+    if (elf_version(EV_CURRENT) == EV_NONE) {
+        fprintf(stderr, "ELF library initialization failed!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    Elf *e = elf_begin(fd, ELF_C_READ, NULL);
+    if (!e) {
+        fprintf(stderr, "elf_begin() failed!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    GElf_Ehdr ehdr;
+    if (gelf_getehdr(e, &ehdr) == NULL) {
+        fprintf(stderr, "gelf_getehdr() failed!\n");
+        elf_end(e);
+        exit(EXIT_FAILURE);
+    }
+
+    Elf_Scn *scn = NULL;
+    GElf_Shdr shdr;
+    while ((scn = elf_nextscn(e, scn)) != NULL) {
+        gelf_getshdr(scn, &shdr);
+
+        if (shdr.sh_type == SHT_SYMTAB) {
+            Elf_Data *data = elf_getdata(scn, NULL);
+            int count = shdr.sh_size / shdr.sh_entsize;
+
+            for (int i = 0; i < count; i++) {
+                GElf_Sym sym;
+                gelf_getsym(data, i, &sym);
+
+                // 只输出与函数相关的符号
+                if (ELF32_ST_TYPE(sym.st_info) == STT_FUNC) {
+                    const char *name = elf_strptr(e, shdr.sh_link, sym.st_name);
+                    if (name) {
+                        // printf("Function %d: %s\n", i, name);
+                        // printf("  Value: %lx\n", sym.st_value);
+                        // printf("  Size: %lu\n", sym.st_size);
+                        // printf("  Info: %u\n\n", sym.st_info);
+                        
+                        functions[func_amount].name = strdup(name);
+                        functions[func_amount].start = sym.st_value;
+                        functions[func_amount].end = sym.st_value + sym.st_size - 4;
+                        // printf("Function %s\n", functions[func_amount].name);
+                        // printf("   Start %#x\n", functions[func_amount].start);
+                        // printf("     End %#x\n", functions[func_amount].end);
+                        func_amount++;
+                    }
+                }
+            }
+            printf("识别到了 %d 个函数\n", func_amount);
+        }
+    }
+
+    elf_end(e);
+    close(fd);
+}
 
 static long load_img() {
   if (img_file == NULL) {
@@ -75,22 +148,25 @@ static int parse_args(int argc, char *argv[]) {
     {"diff"     , required_argument, NULL, 'd'},
     {"port"     , required_argument, NULL, 'p'},
     {"help"     , no_argument      , NULL, 'h'},
+    {"elf"      , required_argument, NULL, 'e'},
     {0          , 0                , NULL,  0 },
   };
   int o;
-  while ( (o = getopt_long(argc, argv, "-bhl:d:p:", table, NULL)) != -1) {
+  while ( (o = getopt_long(argc, argv, "-bhl:d:p:e:", table, NULL)) != -1) {
     switch (o) {
       case 'b': sdb_set_batch_mode(); break;
       case 'p': sscanf(optarg, "%d", &difftest_port); break;
       case 'l': log_file = optarg; break;
       case 'd': diff_so_file = optarg; break;
-      case 1: img_file = optarg; return 0;
+      case 'e': elf_file = optarg; break;
+      case 1: img_file = optarg; break;
       default:
         printf("Usage: %s [OPTION...] IMAGE [args]\n\n", argv[0]);
         printf("\t-b,--batch              run with batch mode\n");
         printf("\t-l,--log=FILE           output log to FILE\n");
         printf("\t-d,--diff=REF_SO        run DiffTest with reference REF_SO\n");
         printf("\t-p,--port=PORT          run DiffTest with port PORT\n");
+        printf("\t-e,--elf=FILE.elf       Load elf file\n");
         printf("\n");
         exit(0);
     }
@@ -104,6 +180,15 @@ void init_monitor(int argc, char *argv[]) {
   /* Parse arguments. */
   parse_args(argc, argv);
 
+  if (elf_file) // 如果传入了elf文件，就运行
+  {
+    parse_elf(elf_file);
+    printf("传入了elf\n");
+  }
+  else
+  {
+    printf("没有传入elf\n");
+  }
   /* Set random seed. */
   init_rand();
 
