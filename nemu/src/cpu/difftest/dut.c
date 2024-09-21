@@ -20,10 +20,18 @@
 #include <memory/paddr.h>
 #include <utils.h>
 #include <difftest-def.h>
-
+// 在DUT host memory的`buf`和REF guest memory的`addr`之间拷贝`n`字节,
+// `direction`指定拷贝的方向, `DIFFTEST_TO_DUT`表示往DUT拷贝, `DIFFTEST_TO_REF`表示往REF拷贝
 void (*ref_difftest_memcpy)(paddr_t addr, void *buf, size_t n, bool direction) = NULL;
+
+// `direction`为`DIFFTEST_TO_DUT`时, 获取REF的寄存器状态到`dut`;
+// `direction`为`DIFFTEST_TO_REF`时, 设置REF的寄存器状态为`dut`;
 void (*ref_difftest_regcpy)(void *dut, bool direction) = NULL;
+
+// 让REF执行`n`条指令
 void (*ref_difftest_exec)(uint64_t n) = NULL;
+
+// 初始化REF的DiffTest功能
 void (*ref_difftest_raise_intr)(uint64_t NO) = NULL;
 
 #ifdef CONFIG_DIFFTEST
@@ -100,13 +108,13 @@ static void checkregs(CPU_state *ref, vaddr_t pc) {
 }
 
 void difftest_step(vaddr_t pc, vaddr_t npc) {
-  CPU_state ref_r;
+  CPU_state ref_r;  // ref_f 用来给 ref 环境 保存 pc 和 gpr[]
 
   if (skip_dut_nr_inst > 0) {
     ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
-    if (ref_r.pc == npc) {
+    if (ref_r.pc == npc) {  // 如果 ref 和 dut 执行的指令一致
       skip_dut_nr_inst = 0;
-      checkregs(&ref_r, npc);
+      checkregs(&ref_r, npc); // 检查寄存器值是否相等
       return;
     }
     skip_dut_nr_inst --;
@@ -122,10 +130,10 @@ void difftest_step(vaddr_t pc, vaddr_t npc) {
     return;
   }
 
-  ref_difftest_exec(1);
-  ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+  ref_difftest_exec(1); // ref 执行 一次
+  ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT); // 获取 ref 寄存器状态
 
-  checkregs(&ref_r, pc);
+  checkregs(&ref_r, pc);  // 进行比较
 }
 #else
 void init_difftest(char *ref_so_file, long img_size, int port) { }
