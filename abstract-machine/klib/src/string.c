@@ -89,6 +89,7 @@ int strncmp(const char *s1, const char *s2, size_t n) { // 比较前 n 个
     return 0;
 }
 
+// 将 s 处 n 个内存的数据 设置为 c
 void *memset(void *s, int c, size_t n) { // unsigned char
   char *cdst = (char *) s;
   int i = 0;
@@ -117,11 +118,11 @@ void *memmove(void *dst, const void *src, size_t n) { // 在重叠区域移动�
   return dst;
 }
 
-void *memcpy(void *out, const void *in, size_t n) {
+void *memcpy(void *out, const void *in, size_t n) { // 复制内存块
   return memmove(out, in, n);
 }
 
-int memcmp(const void *s1, const void *s2, size_t n) {
+int memcmp(const void *s1, const void *s2, size_t n) {  // 比较内存块
   const unsigned char * a1;
   const unsigned char * a2;
   a1 = s1;
