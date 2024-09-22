@@ -166,6 +166,13 @@ config WATCHPOINT
   default n
   help
     Enable watchpoint functionality to monitor changes to specific memory locations.
+
+# 函数调用踪迹
+config FTRACE
+  bool "Enable ftrace support"
+  default n
+  help
+    Enable to know how function call and ret
   
 
 choice

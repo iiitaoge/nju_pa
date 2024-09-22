@@ -32,7 +32,9 @@ uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
 static char * iringbuf[5];  // 环形缓冲区
-static int call_depth = 0;  // 函数调用的深度
+#ifdef CONFIG_FTRACE
+  static int call_depth = 0;  // 函数调用的深度
+#endif
 
 static void up_buf(char *strlog) // 更新iringbuf
 {
@@ -59,36 +61,38 @@ static void printf_buf()
 }
 
 
-static void ftrace(Decode *_this, vaddr_t dnpc)
-{ 
-  char pos[20];
-  strncpy(pos, iringbuf[4], 10);  // 获得现在的 pc
-  word_t ftrace_pc = strtol(pos, NULL, 16); // 现在 pc 的 十六进制格式
-  for (int i = 0; i < func_amount; i++)
-  {
-    // 需要在jal 指令中识别出跳转的函数名
-    bool match_yes = false;
-    // 同时出现这三个 jalr zero ra 才是 ret
-    if (strstr(_this->logbuf,"jalr") && strstr(_this->logbuf, "ra") && strstr(_this->logbuf, "zero"))
+#ifdef CONFIG_FTRACE
+  static void ftrace(Decode *_this, vaddr_t dnpc) // 函数踪迹
+  { 
+    char pos[20];
+    strncpy(pos, iringbuf[4], 10);  // 获得现在的 pc
+    word_t ftrace_pc = strtol(pos, NULL, 16); // 现在 pc 的 十六进制格式
+    for (int i = 0; i < func_amount; i++)
     {
-      match_yes = true; // 出现 ret
-    }
+      // 需要在jal 指令中识别出跳转的函数名
+      bool match_yes = false;
+      // 同时出现这三个 jalr zero ra 才是 ret
+      if (strstr(_this->logbuf,"jalr") && strstr(_this->logbuf, "ra") && strstr(_this->logbuf, "zero"))
+      {
+        match_yes = true; // 出现 ret
+      }
 
-    if (dnpc == functions[i].start) // 如果下一个地址为一个函数的开头，则输出此时调用函数指令的地址
-    {
-      // 进入函数，增加嵌套深度
-      printf("%s:%*s call [%s@0x%#x]\n", pos, call_depth * 2, "", functions[i].name, dnpc);
-      call_depth++;
-    }
-    // 出现 ret , 此时在什么函数里，就从什么函数返回
-    else if (match_yes && ftrace_pc <= functions[i].end && ftrace_pc >= functions[i].start)  // 在jalr指令中识别出返回的地址 -> 函数名
-    {
-      // 函数返回，减少嵌套深度
-      call_depth--;
-      printf("%#x:%*s ret  [%s]\n", ftrace_pc, call_depth * 2, "", functions[i].name);  // 输出是从哪里返回的
+      if (dnpc == functions[i].start) // 如果下一个地址为一个函数的开头，则输出此时调用函数指令的地址
+      {
+        // 进入函数，增加嵌套深度
+        printf("%s:%*s call [%s@0x%#x]\n", pos, call_depth * 2, "", functions[i].name, dnpc);
+        call_depth++;
+      }
+      // 出现 ret , 此时在什么函数里，就从什么函数返回
+      else if (match_yes && ftrace_pc <= functions[i].end && ftrace_pc >= functions[i].start)  // 在jalr指令中识别出返回的地址 -> 函数名
+      {
+        // 函数返回，减少嵌套深度
+        call_depth--;
+        printf("%#x:%*s ret  [%s]\n", ftrace_pc, call_depth * 2, "", functions[i].name);  // 输出是从哪里返回的
+      }
     }
   }
-}
+#endif
 
 void device_update();
 
@@ -102,7 +106,9 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) { // 程序踪迹
   char *strlog = strdup(_this->logbuf); 
   up_buf(strlog); // 更新 up_buf
 
-  ftrace(_this, dnpc);
+#ifdef CONFIG_FTRACE
+  ftrace(_this, dnpc);  // 打印函数踪迹
+#endif
 
 // 监视点
 #ifdef CONFIG_WATCHPOINT
