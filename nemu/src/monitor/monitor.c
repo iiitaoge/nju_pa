@@ -15,10 +15,7 @@
 
 #include <isa.h>
 #include <memory/paddr.h>
-#include <libelf.h>
-#include <gelf.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include <config/trace.h> // elf和函数踪迹ftrace
 
 void init_rand();
 void init_log(const char *log_file);

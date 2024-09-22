@@ -19,6 +19,7 @@
 #include <readline/history.h>
 #include "sdb.h"
 #include <memory/paddr.h> // 操作内存
+#include <config/watchpoint.h>
 
 static int is_batch_mode = false;
 
