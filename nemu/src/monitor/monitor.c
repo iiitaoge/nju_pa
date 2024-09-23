@@ -15,7 +15,7 @@
 
 #include <isa.h>
 #include <memory/paddr.h>
-#include <config/trace.h> // elf和函数踪迹ftrace
+#include <sdb/trace.h> // elf和函数踪迹ftrace
 
 void init_rand();
 void init_log(const char *log_file);

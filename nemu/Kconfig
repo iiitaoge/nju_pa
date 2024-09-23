@@ -173,7 +173,13 @@ config FTRACE
   default n
   help
     Enable to know how function call and ret
-  
+
+# 环形缓冲区
+config IRINGBUF
+  bool "Enable iringbuf support"
+  default n
+  help
+    Enable to iringbuf
 
 choice
   prompt "Reference design"

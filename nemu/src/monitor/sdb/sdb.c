@@ -19,7 +19,7 @@
 #include <readline/history.h>
 #include "sdb.h"
 #include <memory/paddr.h> // 操作内存
-#include <config/watchpoint.h>
+#include <sdb/watchpoint.h>
 
 static int is_batch_mode = false;
 
@@ -75,7 +75,9 @@ static int cmd_info(char *args)
   } 
   else if (strcmp(args, "w") == 0) 
   {
+#ifdef CONFIG_WATCHPOINT
     print_watch_pointer();
+#endif
   } 
   else 
   {

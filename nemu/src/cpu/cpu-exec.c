@@ -17,8 +17,8 @@
 #include <cpu/decode.h>
 #include <cpu/difftest.h>
 #include <locale.h>
-#include <config/watchpoint.h>
-#include <config/trace.h>
+#include <sdb/watchpoint.h>
+#include <sdb/trace.h>
 
 /* The assembly code of instructions executed is only output to the screen
  * when the number of instructions executed is less than this value.
@@ -31,34 +31,39 @@ CPU_state cpu = {};
 uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
-static char * iringbuf[5];  // 环形缓冲区
 #ifdef CONFIG_FTRACE
   static int call_depth = 0;  // 函数调用的深度
 #endif
 
-static void up_buf(char *strlog) // 更新iringbuf
-{
+#ifdef CONFIG_IRINGBUF
+
+  static char * iringbuf[5];  // 环形缓冲区
+
+  static void up_buf(char *strlog) // 更新iringbuf
+  {
+  free(iringbuf[0]);
   for (int i = 0; i < 4; i++)
   {
     iringbuf[i] = iringbuf[i + 1];
   }
   iringbuf[4] = strlog;
-}
+  }
 
-static void printf_buf()
-{
-  for (int i = 0; i < 5; i++)
+  static void printf_buf()
   {
-    if (iringbuf[i] != NULL)  // 检查指针是否为空
+    for (int i = 0; i < 5; i++)
     {
-      printf("%s\n", iringbuf[i]);
-    }
-    else
-    {
-      printf("(null)\n");  // 打印一个占位符，指示此位置为空
+      if (iringbuf[i] != NULL)  // 检查指针是否为空
+      {
+        printf("%s\n", iringbuf[i]);
+      }
+      else
+      {
+        printf("(null)\n");  // 打印一个占位符，指示此位置为空
+      }
     }
   }
-}
+#endif
 
 
 #ifdef CONFIG_FTRACE
@@ -103,8 +108,11 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) { // 程序踪迹
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
 
+#ifdef CONFIG_IRINGBUF
   char *strlog = strdup(_this->logbuf); 
   up_buf(strlog); // 更新 up_buf
+#endif
+
 
 #ifdef CONFIG_FTRACE
   ftrace(_this, dnpc);  // 打印函数踪迹
@@ -171,7 +179,9 @@ static void statistic() {
 void assert_fail_msg() {  // 当断言失败，比如发生段错误时候触发
   isa_reg_display();
   statistic();
+#ifdef CONFIG_IRINGBUF
   printf_buf();
+#endif
 }
 
 /* Simulate how the CPU works. */
