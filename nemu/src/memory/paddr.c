@@ -50,6 +50,7 @@ void init_mem() {
   Log("physical memory area [" FMT_PADDR ", " FMT_PADDR "]", PMEM_LEFT, PMEM_RIGHT);
 }
 
+// 根据地址落在物理地址还是设备地址来选择进行读取物理内存或者读取设备内存
 word_t paddr_read(paddr_t addr, int len) {
   if (likely(in_pmem(addr))) return pmem_read(addr, len);
   IFDEF(CONFIG_DEVICE, return mmio_read(addr, len));
@@ -57,6 +58,7 @@ word_t paddr_read(paddr_t addr, int len) {
   return 0;
 }
 
+// 根据地址落在物理地址还是设备地址来选择进行写入物理内存或者写入设备内存
 void paddr_write(paddr_t addr, int len, word_t data) {
   if (likely(in_pmem(addr))) { pmem_write(addr, len, data); return; }
   IFDEF(CONFIG_DEVICE, mmio_write(addr, len, data); return);

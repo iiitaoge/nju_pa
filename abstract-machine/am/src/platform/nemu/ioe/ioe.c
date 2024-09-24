@@ -55,5 +55,9 @@ bool ioe_init() {
   return true;
 }
 
+/*以下只是抽象， 在kilb-macros.h中用宏对这个API进行了封装*/
+
+// 从寄存器中读出数据写入缓冲区中， reg -> buf
 void ioe_read (int reg, void *buf) { ((handler_t)lut[reg])(buf); }
+// 往寄存器中写入缓冲区的内容， buf -> reg
 void ioe_write(int reg, void *buf) { ((handler_t)lut[reg])(buf); }

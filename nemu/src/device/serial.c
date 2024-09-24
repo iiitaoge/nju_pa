@@ -21,11 +21,11 @@
 
 #define CH_OFFSET 0
 
-static uint8_t *serial_base = NULL;
+static uint8_t *serial_base = NULL; // mmio空间
 
-
+// 如果定义了CONFIG_TARGET_AM，就调用putch(ch)，否则打印到标准错误输出
 static void serial_putc(char ch) {
-  MUXDEF(CONFIG_TARGET_AM, putch(ch), putc(ch, stderr));
+  MUXDEF(CONFIG_TARGET_AM, putch(ch), putc(ch, stderr)); // sterr没有缓冲，会被立即打印到屏幕
 }
 
 static void serial_io_handler(uint32_t offset, int len, bool is_write) {
