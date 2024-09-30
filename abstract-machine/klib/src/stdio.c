@@ -33,6 +33,11 @@ int printf(const char *fmt, ...) //打印到屏幕
                     putch(*s);
                 }
             }
+            else if (*fmt == 'c')
+            {
+                int c = va_arg(args, int);  // 使用 int 而不是 char
+                putch((char)c);
+            }
             else 
             {
                 putch(*fmt);  // 直接输出非格式化字符

@@ -48,8 +48,9 @@ static char *img_file = NULL;
 static char *elf_file = NULL; // 保存 elf 文件
 static int difftest_port = 1234;
 
-uint32_t func_amount = 0;   // 函数的个数
-struct function_trace functions[100];   // 假设有100个函数 
+#ifdef CONFIG_FTRACE
+  uint32_t func_amount = 0;   // 函数的个数
+struct function_trace functions[1000000];   // 假设有100个函数,如果有非常多的函数，可能会导致function内存越界，因为 func_amount 会非常大
 
 void parse_elf(const char *filename) {
     int fd = open(filename, O_RDONLY);
@@ -115,7 +116,9 @@ void parse_elf(const char *filename) {
     elf_end(e);
     close(fd);
 }
+#endif
 
+// 加载 bin 文件
 static long load_img() {
   if (img_file == NULL) {
     Log("No image is given. Use the default build-in image.");
@@ -174,9 +177,11 @@ static int parse_args(int argc, char *argv[]) {
 void init_monitor(int argc, char *argv[]) {
   /* Perform some global initialization. */
 
+  
   /* Parse arguments. */
   parse_args(argc, argv);
 
+#ifdef CONFIG_FTRACE
   if (elf_file) // 如果传入了elf文件，就运行
   {
     parse_elf(elf_file);
@@ -186,6 +191,7 @@ void init_monitor(int argc, char *argv[]) {
   {
     printf("没有传入elf\n");
   }
+#endif
   /* Set random seed. */
   init_rand();
 

@@ -1,6 +1,7 @@
 #ifndef KLIB_H__
 #define KLIB_H__
-// #define __NATIVE_USE_KLIB__
+//#define __NATIVE_USE_KLIB__
+//#define __ISA_NATIVE__
 #include <am.h>
 #include <stddef.h>
 #include <stdarg.h>

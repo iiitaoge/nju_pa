@@ -33,24 +33,24 @@ void init_alarm();
 void send_key(uint8_t, bool);
 void vga_update_screen();
 
-void device_update() {
+void device_update() { // 设备更新函数
   static uint64_t last = 0;
   uint64_t now = get_time();
-  if (now - last < 1000000 / TIMER_HZ) {
+  if (now - last < 1000000 / TIMER_HZ) { // 达到一定时间就更新设备，没达到就返回
     return;
   }
   last = now;
 
-  IFDEF(CONFIG_HAS_VGA, vga_update_screen());
+  IFDEF(CONFIG_HAS_VGA, vga_update_screen()); // 更新显存
 
 #ifndef CONFIG_TARGET_AM
   SDL_Event event;
-  while (SDL_PollEvent(&event)) {
+  while (SDL_PollEvent(&event)) { // 点击窗口的 x 就代表退出
     switch (event.type) {
       case SDL_QUIT:
         nemu_state.state = NEMU_QUIT;
         break;
-#ifdef CONFIG_HAS_KEYBOARD
+#ifdef CONFIG_HAS_KEYBOARD  // 更新键盘
       // If a key was pressed
       case SDL_KEYDOWN:
       case SDL_KEYUP: {
