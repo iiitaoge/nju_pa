@@ -21,14 +21,14 @@ typedef struct {
 typedef struct Context Context;
 
 // An event of type @event, caused by @cause of pointer @ref
-typedef struct {
+typedef struct { // 事件， 异常处理，自陷，系统调用......
   enum {
     EVENT_NULL = 0,
     EVENT_YIELD, EVENT_SYSCALL, EVENT_PAGEFAULT, EVENT_ERROR,
     EVENT_IRQ_TIMER, EVENT_IRQ_IODEV,
-  } event;
-  uintptr_t cause, ref;
-  const char *msg;
+  } event;  // 事件编号
+  uintptr_t cause, ref; // 事件的补充信息
+  const char *msg;  // 事件的信息字符串
 } Event;
 
 // A protected address space with user memory @area
