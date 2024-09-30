@@ -21,7 +21,7 @@ static uint32_t *rtc_port_base = NULL;
 
 static void rtc_io_handler(uint32_t offset, int len, bool is_write) {
   assert(offset == 0 || offset == 4);
-  if (!is_write && offset == 4) { // 实现了原子性
+  if (!is_write && offset == 4) { // 实现了原子性 加锁
     uint64_t us = get_time();
     // 往这个 uint32_t 数组内存入了 低32位和高32位了
     rtc_port_base[0] = (uint32_t)us;
