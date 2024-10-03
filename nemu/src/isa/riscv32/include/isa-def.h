@@ -16,11 +16,25 @@
 #ifndef __ISA_RISCV_H__
 #define __ISA_RISCV_H__
 
+// 这是csr的宏
+#define MEPC_CODE 0x341
+#define MSTATUS_CODE 0x300
+#define MCAUSE_CODE 0x342
+#define MTVEC_CODE 0x305
+
 #include <common.h>
+
+typedef struct {  // 自建 csr 结构体
+  word_t mepc;
+  word_t mcause; 
+  word_t mstatus;
+  word_t mtvec;
+}riscv32_CSR_state;
 
 typedef struct {
   word_t gpr[MUXDEF(CONFIG_RVE, 16, 32)]; // 寄存器数组，存放寄存器具体的数据
   vaddr_t pc;
+  riscv32_CSR_state csr;  // 系统特殊寄存器
 } MUXDEF(CONFIG_RV64, riscv64_CPU_state, riscv32_CPU_state);
 
 // decode
