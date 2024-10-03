@@ -9,8 +9,11 @@
 
 struct Context {
   // TODO: fix the order of these members to match trap.S
-  uintptr_t mepc, mcause, gpr[NR_REGS], mstatus;
-  void *pdir;
+  uintptr_t gpr[NR_REGS];  // 通用寄存器
+  uintptr_t mcause;        // 机器异常原因
+  uintptr_t mstatus;       // 机器状态寄存器
+  uintptr_t mepc;          // 机器异常程序计数器
+  void *pdir;              // 页表基址
 };
 
 #ifdef __riscv_e

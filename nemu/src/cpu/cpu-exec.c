@@ -27,6 +27,7 @@
  */
 #define MAX_INST_TO_PRINT 10
 
+CSR_state csr = {}; // 创建 csr 特殊寄存器
 CPU_state cpu = {};
 uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
@@ -85,7 +86,8 @@ static bool g_print_step = false;
       if (dnpc == functions[i].start) // 如果下一个地址为一个函数的开头，则输出此时调用函数指令的地址
       {
         // 进入函数，增加嵌套深度
-        printf("%s:%*s call [%s@0x%#x]\n", pos, call_depth * 2, "", functions[i].name, dnpc);
+        //fprintf(ftrace_log, "%s:%*s call [%s@%#x]\n", pos, call_depth * 2, "", functions[i].name, dnpc);
+        printf("%s:%*s call [%s@%#x]\n", pos, call_depth * 2, "", functions[i].name, dnpc);
         call_depth++;
       }
       // 出现 ret , 此时在什么函数里，就从什么函数返回
@@ -93,6 +95,7 @@ static bool g_print_step = false;
       {
         // 函数返回，减少嵌套深度
         call_depth--;
+        //fprintf(ftrace_log, "%#x:%*s ret  [%s]\n", ftrace_pc, call_depth * 2, "", functions[i].name);
         printf("%#x:%*s ret  [%s]\n", ftrace_pc, call_depth * 2, "", functions[i].name);  // 输出是从哪里返回的
       }
     }
