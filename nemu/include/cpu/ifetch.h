@@ -17,6 +17,7 @@
 
 #include <memory/vaddr.h>
 
+// 在执行指令之前就将 s->snpc = pc + 4 snpc指向下一条指令了
 static inline uint32_t inst_fetch(vaddr_t *pc, int len) {
   uint32_t inst = vaddr_ifetch(*pc, len);
   (*pc) += len;

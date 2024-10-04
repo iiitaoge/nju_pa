@@ -28,7 +28,8 @@ static vaddr_t *csr_register(word_t imm) {
   default: panic("Unknown csr");
   }
 }
- 
+
+// 当从异常返回的时候，执行的是pc的下一条指令， snpc
 #define ECALL(dnpc) { bool success; dnpc = (isa_raise_intr(isa_reg_str2val("a7", &success), s->pc)); }
 #define CSR(i) *csr_register(i)
 
@@ -219,7 +220,7 @@ static int decode_exec(Decode *s) {
   );
 
   INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall   , I, ECALL(s->dnpc));
-
+  INSTPAT("0011000 00010 00000 000 00000 11100 11", mret    , R, s->dnpc = CSR(0x341));
 
 
   // 这玩意要放最后面，不管机器码是什么都能匹配

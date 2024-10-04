@@ -8,15 +8,16 @@ Context* __am_irq_handle(Context *c) {
   if (user_handler) {
     Event ev = {0};
     switch (c->mcause) {
-      case 0:
+      case -1:
         ev.event=EVENT_YIELD;
         break;
         
-      default: ev.event = EVENT_ERROR; break;
+      default: ev.event = EVENT_ERROR; 
+      break;
     }
 
     c = user_handler(ev, c);
-    assert(c != NULL);
+    //assert(c != NULL);
   }
 
   return c;
@@ -42,8 +43,7 @@ void yield() {
 #ifdef __riscv_e
   asm volatile("li a5, -1; ecall");
 #else
-  printf("进入yield了\n");
-  asm volatile("li a7, -1; ecall");
+  asm volatile("li a7, -1; ecall"); // 这里给 a7 赋的值就是 事件分发时的编号
 #endif
 }
 
