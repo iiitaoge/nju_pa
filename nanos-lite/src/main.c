@@ -17,7 +17,7 @@ int main() {
 
   init_device();
 
-  init_ramdisk();
+  init_ramdisk(); // 内存当磁盘使用
 
 #ifdef HAS_CTE
   init_irq();
