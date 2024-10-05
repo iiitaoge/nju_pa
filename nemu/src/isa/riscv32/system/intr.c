@@ -22,7 +22,8 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) { // NO 在 am CTE中初始化
 
   cpu.csr.mcause = NO;
   cpu.csr.mepc = epc;
- 
+  
+  printf("异常编号为 %d, 异常地址为 %#x\n", NO, epc); // 在 nemu 中实现异常踪迹
   return cpu.csr.mtvec;
 
 }
