@@ -181,6 +181,13 @@ config IRINGBUF
   help
     Enable to iringbuf
 
+# 异常踪迹
+config ETRACE
+  bool "Enable ETRACE support"
+  default none
+  help
+    Enable to ETRACE    
+
 choice
   prompt "Reference design"
   default DIFFTEST_REF_SPIKE if ISA_riscv

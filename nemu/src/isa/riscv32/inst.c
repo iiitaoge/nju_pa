@@ -220,7 +220,7 @@ static int decode_exec(Decode *s) {
   );
 
   INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall   , I, ECALL(s->dnpc));
-  INSTPAT("0011000 00010 00000 000 00000 11100 11", mret    , R, s->dnpc = CSR(0x341));
+  INSTPAT("0011000 00010 00000 000 00000 11100 11", mret    , R, s->dnpc = CSR(0x341) + 4);
 
 
   // 这玩意要放最后面，不管机器码是什么都能匹配
