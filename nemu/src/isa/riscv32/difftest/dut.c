@@ -22,6 +22,8 @@ bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
   {
     if (cpu.gpr[i] != ref_r->gpr[i])
     {
+      // printf("cpu寄存器是%s, 值是 %u\n", reg_name(i), cpu.gpr[i]);
+      // printf("ref寄存器是%s, 值是 %u\n", reg_name(i), ref_r->gpr[i]);
       return false;
     }
   }

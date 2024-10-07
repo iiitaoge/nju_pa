@@ -20,7 +20,7 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) { // NO 在 am CTE中初始化
    * Then return the address of the interrupt/exception vector.
    */
 
-  IFDEF(CONFIG_ETRACE, printf("产生了异常编号为 %d\n", NO));
+  IFDEF(CONFIG_ETRACE, Log("产生了异常编号为 %d", NO));
 
   cpu.csr.mcause = NO;
   cpu.csr.mepc = epc;

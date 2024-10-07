@@ -49,13 +49,13 @@ static void init_keymap() {
 static int key_queue[KEY_QUEUE_LEN] = {};
 static int key_f = 0, key_r = 0;
 
-static void key_enqueue(uint32_t am_scancode) {
+static void key_enqueue(uint32_t am_scancode) { // 加入队列
   key_queue[key_r] = am_scancode;
   key_r = (key_r + 1) % KEY_QUEUE_LEN;
   Assert(key_r != key_f, "key queue overflow!");
 }
 
-static uint32_t key_dequeue() {
+static uint32_t key_dequeue() { // 从队列取出
   uint32_t key = NEMU_KEY_NONE;
   if (key_f != key_r) {
     key = key_queue[key_f];
@@ -64,7 +64,7 @@ static uint32_t key_dequeue() {
   return key;
 }
 
-void send_key(uint8_t scancode, bool is_keydown) {
+void send_key(uint8_t scancode, bool is_keydown) {  // 更新键盘码
   if (nemu_state.state == NEMU_RUNNING && keymap[scancode] != NEMU_KEY_NONE) {
     uint32_t am_scancode = keymap[scancode] | (is_keydown ? KEYDOWN_MASK : 0);
     key_enqueue(am_scancode);
@@ -82,7 +82,7 @@ static uint32_t key_dequeue() {
 
 static uint32_t *i8042_data_port_base = NULL;
 
-static void i8042_data_io_handler(uint32_t offset, int len, bool is_write) {
+static void i8042_data_io_handler(uint32_t offset, int len, bool is_write) {  // mmio
   assert(!is_write);
   assert(offset == 0);
   i8042_data_port_base[0] = key_dequeue();  // 从队列里取出 键盘码
