@@ -3,7 +3,7 @@
 
 enum {
   SYS_exit,
-  SYS_yield,
+  SYS_yield,  // am 里的是 -1 ，这里是 1
   SYS_open,
   SYS_read,
   SYS_write,
