@@ -4,6 +4,7 @@
 
 static Context* (*user_handler)(Event, Context*) = NULL;
 
+// 上下文放在 am 里面是因为 通过异常编号来分发事件 这个操作每个指令集都不一样
 Context* __am_irq_handle(Context *c) {
   if (user_handler) {
     Event ev = {0};
