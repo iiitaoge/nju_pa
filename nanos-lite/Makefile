@@ -1,4 +1,4 @@
-#HAS_NAVY = 1
+HAS_NAVY = 1
 RAMDISK_FILE = build/ramdisk.img
 
 NAME = nanos-lite
@@ -23,6 +23,9 @@ else
 ifeq ($(wildcard $(NAVY_HOME)/libs/libos/src/syscall.h),)
   $(error $$NAVY_HOME must be a Navy-apps repo)
 endif
+
+#  build/ramdisk.img 指向的是 $(NAVY_HOME)/build/ramdisk.img, 相当于直接用指向的那个文件
+#  src/files.h 指向 $(NAVY_HOME)/build/ramdisk.h
 
 update:
 	$(MAKE) -s -C $(NAVY_HOME) ISA=$(ISA) ramdisk

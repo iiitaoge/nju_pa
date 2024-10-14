@@ -1,8 +1,4 @@
-#include <common.h>
-
-extern uint8_t ramdisk_start;
-extern uint8_t ramdisk_end;
-#define RAMDISK_SIZE ((&ramdisk_end) - (&ramdisk_start))
+#include <ramdisk.h>
 
 /* The kernel is monolithic, therefore we do not need to
  * translate the address `buf' from the user process to
@@ -12,7 +8,7 @@ extern uint8_t ramdisk_end;
 /* read `len' bytes starting from `offset' of ramdisk into `buf' */
 size_t ramdisk_read(void *buf, size_t offset, size_t len) {
   assert(offset + len <= RAMDISK_SIZE);
-  memcpy(buf, &ramdisk_start + offset, len);
+  memcpy(buf, &ramdisk_start + offset, len);  // 将 start 偏移 offset 位置的n字节的内存拷贝给 buf
   return len;
 }
 
@@ -24,7 +20,7 @@ size_t ramdisk_write(const void *buf, size_t offset, size_t len) {
 }
 
 void init_ramdisk() {
-  Log("ramdisk info: start = %p, end = %p, size = %d bytes",
+  Log("ramdisk info: start = %p, end = %p, size = %d bytes",  // printf 实现 格式化 p
       &ramdisk_start, &ramdisk_end, RAMDISK_SIZE);
 }
 
