@@ -1,15 +1,10 @@
 #include <common.h>
-// 引入了menuconfig设置的 STRACE
-#include "../../../nemu/include/generated/autoconf.h"
 
 void do_syscall(Context *c);
 
 
 static Context* do_event(Event e, Context* c) {
 
-#ifdef CONFIG_STRACE
-  Log("系统调用编号为 %d\n", e.event);
-#endif
   switch (e.event) {
     case 1: //这里没有调用 am 的 yield
       printf("event ID=%d\nc->GPR1=%d\nc->GPR2=%d\nc->GPR3=%d\nc->GPR4=%d\nc->GPRx=%d\n",
