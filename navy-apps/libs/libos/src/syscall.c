@@ -61,31 +61,41 @@ void _exit(int status) {
 }
 
 int _open(const char *path, int flags, mode_t mode) {
-  _exit(SYS_open);
-  return 0;
+  return _syscall_(SYS_open, (uintptr_t) path, flags, mode);
 }
 
 int _write(int fd, void *buf, size_t count) {
   return _syscall_(SYS_write, fd, (uintptr_t)buf, count);  // 返回值就是写入的字节数
 }
 
+// 获取堆区分配数据段之后的起始地址
+extern _end;
+static intptr_t cur_brk = (intptr_t)&_end;
+
 void *_sbrk(intptr_t increment) {
-  return (void *)-1;
+  intptr_t old_brk = cur_brk; // 保存初始的 _end
+  intptr_t new_brk = old_brk + increment; // 计算出新的地址
+  if (_syscall_(SYS_brk, new_brk, 0, 0) != 0) // 分配空间是否成功
+  {
+    return (void*)-1;  
+  }
+  cur_brk = new_brk;
+  return (void*)old_brk;
 }
 
+
 int _read(int fd, void *buf, size_t count) {
-  _exit(SYS_read);
-  return 0;
+  _syscall_(SYS_read, fd, buf, count);
+  return count;
 }
 
 int _close(int fd) {
-  _exit(SYS_close);
-  return 0;
+  _syscall_(SYS_close, fd, 0, 0);
+  return fd;
 }
 
 off_t _lseek(int fd, off_t offset, int whence) {
-  _exit(SYS_lseek);
-  return 0;
+  return _syscall_(SYS_lseek, fd, offset, whence);  // 需要返回文件当前的偏移量
 }
 
 int _gettimeofday(struct timeval *tv, struct timezone *tz) {
