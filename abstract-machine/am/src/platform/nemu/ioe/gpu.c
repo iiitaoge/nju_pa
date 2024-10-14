@@ -45,7 +45,7 @@ void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
   }
 
   if (ctl->sync) {
-    outl(SYNC_ADDR, 1);
+    outl(SYNC_ADDR, 1); // 允许更新
   }
 }
 

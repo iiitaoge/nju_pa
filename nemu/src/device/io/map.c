@@ -70,5 +70,5 @@ void map_write(paddr_t addr, int len, word_t data, IOMap *map) {
   check_bound(map, addr);
   paddr_t offset = addr - map->low;
   host_write(map->space + offset, len, data);
-  invoke_callback(map->callback, offset, len, true);
+  invoke_callback(map->callback, offset, len, true); // 如果回调函数指针不为 NULL，则调用该回调函数，并传入相应的参数。
 }

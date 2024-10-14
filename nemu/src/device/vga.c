@@ -76,7 +76,7 @@ void vga_update_screen() {
   // then zero out the sync register
   if (vgactl_port_base[1]) {
     update_screen();
-    vgactl_port_base[1] = 0;
+    vgactl_port_base[1] = 0;  // 置为0，代表更新完了
   }
 }
 
@@ -90,7 +90,7 @@ void init_vga() {
 #endif
 
   vmem = new_space(screen_size());
-  add_mmio_map("vmem", CONFIG_FB_ADDR, vmem, screen_size(), NULL);
+  add_mmio_map("vmem", CONFIG_FB_ADDR, vmem, screen_size(), NULL);  // 告知了显存地址
   IFDEF(CONFIG_VGA_SHOW_SCREEN, init_screen());
   IFDEF(CONFIG_VGA_SHOW_SCREEN, memset(vmem, 0, screen_size()));
   update_screen();
