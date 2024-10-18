@@ -21,7 +21,7 @@ IFDEF(CONFIG_TIMER_CLOCK_GETTIME,
 IFDEF(CONFIG_TIMER_CLOCK_GETTIME,
     static_assert(sizeof(clock_t) == 8, "sizeof(clock_t) != 8"));
 
-static uint64_t boot_time = 0;
+static uint64_t boot_time = 0;  // 系统启动时间
 
 static uint64_t get_time_internal() { // 获取了从 1900 1月 1日 到现在所有的微妙数
 #if defined(CONFIG_TARGET_AM)
@@ -38,7 +38,7 @@ static uint64_t get_time_internal() { // 获取了从 1900 1月 1日 到现在�
   return us;
 }
 
-// 可以计算出两次 get_time()之间的时间
+// 计算出现在和系统启动的间隔
 uint64_t get_time() {
   if (boot_time == 0) boot_time = get_time_internal();
   uint64_t now = get_time_internal();
