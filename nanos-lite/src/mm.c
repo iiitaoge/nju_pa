@@ -1,4 +1,5 @@
 #include <memory.h>
+#include <common.h>
 
 static void *pf = NULL;
 
