@@ -3,13 +3,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 static int evtdev = -1;
 static int fbdev = -1;
 static int screen_w = 0, screen_h = 0;
 
+// 获取自系统启动开始的毫秒数
 uint32_t NDL_GetTicks() {
-  return 0;
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return tv.tv_usec / 1000 + tv.tv_sec * 1000;
 }
 
 int NDL_PollEvent(char *buf, int len) {

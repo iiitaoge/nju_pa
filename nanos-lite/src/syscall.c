@@ -1,9 +1,18 @@
 #include <common.h>
 #include "syscall.h"
+
 // 引入了menuconfig设置的 STRACE
 #include "../../../nemu/include/generated/autoconf.h"
 #include <fs.h>
 
+// #include <sys/time.h>
+#include <stdint.h>
+
+// 引入这个结构体，方便
+struct timeval {
+	long		tv_sec;		/* seconds */
+	long	tv_usec;	/* and microseconds */
+};
 
 static void _SYS_exit(Context *c);
 static void _SYS_write(Context *c);
@@ -12,6 +21,7 @@ static void _SYS_open(Context *c);
 static void _SYS_read(Context *c);
 static void _SYS_lseek(Context *c);
 static void _SYS_close(Context *c);
+static void _SYS_gettimeofday(Context *c);
 
 void do_syscall(Context *c) {
   uintptr_t a[4];
@@ -44,6 +54,9 @@ void do_syscall(Context *c) {
       break;
     case SYS_close:
       _SYS_close(c);
+      break;
+    case SYS_gettimeofday:
+      _SYS_gettimeofday(c);
       break;
     default: panic("Unhandled syscall ID = %d", a[0]);
   }
@@ -104,4 +117,15 @@ static void _SYS_close(Context *c)
 {
   int fd = c->GPR2;
   fs_close(fd);
+}
+
+// 直接用指针操作，性能感觉很强，毕竟减去了中间os和用户层通过系统调用返回值交互
+static void _SYS_gettimeofday(Context *c)
+{
+  // 获取 tv 的指针，通过指针和固定的内存结构访问其中的成员
+  struct timeval *tv = (struct timeval *)c->GPR2;
+  __uint64_t time = io_read(AM_TIMER_UPTIME).us;
+  tv->tv_usec = (time % 1000000);
+  tv->tv_sec = (time / 1000000);
+  c->GPRx = 0;
 }

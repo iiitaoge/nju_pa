@@ -98,9 +98,12 @@ off_t _lseek(int fd, off_t offset, int whence) {
   return _syscall_(SYS_lseek, fd, offset, whence);  // 需要返回文件当前的偏移量
 }
 
+// 获取系统时间
 int _gettimeofday(struct timeval *tv, struct timezone *tz) {
-  _exit(SYS_gettimeofday);
-  return 0;
+  // printf("gettimeday启动了 tv 在 内存这里 %d\n", (uint32_t)tv);
+  // printf("_gettimeofday中成员的大小 tv->tv_sec : %d tv->tv_usec %d \n", sizeof(tv->tv_sec), sizeof(tv->tv_usec));
+  // printf("_gettimeofday中成员的值 tv->tv_sec : %d tv->tv_usec %d \n", tv->tv_sec, tv->tv_usec);
+  return _syscall_(SYS_gettimeofday, (intptr_t)tv, 0, 0);
 }
 
 int _execve(const char *fname, char * const argv[], char *const envp[]) {
