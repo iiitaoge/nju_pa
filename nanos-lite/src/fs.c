@@ -15,7 +15,7 @@ typedef struct {
   WriteFn write;
 } Finfo;
 
-enum {FD_STDIN, FD_STDOUT, FD_STDERR, FD_FB};
+enum {FD_STDIN, FD_STDOUT, FD_STDERR, FD_FB, FD_EVENT = 11};
 
 size_t invalid_read(void *buf, size_t offset, size_t len) {
   panic("should not reach here");
@@ -33,6 +33,7 @@ static Finfo file_table[] __attribute__((used)) = {
   [FD_STDOUT] = {"stdout", 0, 0, 0, invalid_read, serial_write},  // 默认函数修改成了串口输出
   [FD_STDERR] = {"stderr", 0, 0, 0, invalid_read, serial_write},  // 同上
 #include "files.h"
+  [FD_EVENT] = {"event_read", 0, 0, 0, events_read, invalid_write},
 };
 
 #define NR_FILES sizeof(file_table) / sizeof(file_table[0]) 
@@ -99,6 +100,7 @@ size_t fs_read(int fd, void *buf, size_t len)
         }
         read_size = file_table[fd].read(buf, file_table[fd].open_offset, read_size);
         file_table[fd].open_offset += read_size;
+        // printf("read 函数里 read_size是多少 %d\n", read_size);
         return read_size;
     }
 }

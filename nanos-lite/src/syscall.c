@@ -101,6 +101,7 @@ static void _SYS_read(Context *c)
   void *buf = (void*) c->GPR3;
   size_t len = c->GPR4;
   size_t count = fs_read(fd, buf, len); // read 不一定读 len，如果len大于文件剩余长度则只读剩余长度字节
+  // printf("_SYS_read c->GPRx 设置为 %d\n", count);
   c->GPRx = count;
 }
 

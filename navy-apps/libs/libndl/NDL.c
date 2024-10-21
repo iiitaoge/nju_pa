@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <sys/time.h>
 
+#define FD_EVENT 11
+
 static int evtdev = -1;
 static int fbdev = -1;
 static int screen_w = 0, screen_h = 0;
@@ -17,7 +19,7 @@ uint32_t NDL_GetTicks() {
 }
 
 int NDL_PollEvent(char *buf, int len) {
-  return 0;
+  return read(FD_EVENT, buf, len);
 }
 
 void NDL_OpenCanvas(int *w, int *h) {
