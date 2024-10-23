@@ -171,9 +171,56 @@ int sprintf(char *out, const char *fmt, ...)
   return (str - out);  
 }
 
-int snprintf(char *out, size_t n, const char *fmt, ...) {
-  panic("Not implemented");
+int snprintf(char *out, size_t n, const char *fmt, ...) 
+{
+  va_list args;
+  va_start(args, fmt);
+  char *str = out;
+  size_t written = 0;
+
+  while (*fmt && written < n - 1)  // 保证至少为 \0 留出一个空间
+  {
+    if (*fmt == '%') 
+    {
+      fmt++;
+      if (*fmt == 'd') 
+      {
+        int i = va_arg(args, int);
+        char *num_str;
+        num_str = itoa(i);
+        for (char *p = num_str; *p != '\0' && written < n - 1; p++) 
+        {
+          *str++ = *p;
+          written++;
+        }
+      } 
+      else if (*fmt == 's') 
+      {
+        char *s = va_arg(args, char*);
+        while (*s && written < n - 1) 
+        {
+          *str++ = *s++;
+          written++;
+        }
+      }
+    } 
+    else 
+    {
+      *str++ = *fmt;
+      written++;
+    }
+    fmt++;
+  }
+
+  // 确保结果字符串以 '\0' 结尾
+  *str = '\0';
+  
+  va_end(args);
+
+  // 返回实际应写入的字符数，不受 n 的限制
+  return written;  
 }
+
 
 int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
   panic("Not implemented");
