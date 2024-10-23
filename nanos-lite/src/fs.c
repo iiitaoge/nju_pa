@@ -15,7 +15,7 @@ typedef struct {
   WriteFn write;
 } Finfo;
 
-enum {FD_STDIN, FD_STDOUT, FD_STDERR, FD_FB, FD_EVENT = 11};
+enum {FD_STDIN, FD_STDOUT, FD_STDERR, FD_EVENT, FD_DISPINFO, FD_FB};
 
 size_t invalid_read(void *buf, size_t offset, size_t len) {
   panic("should not reach here");
@@ -32,8 +32,10 @@ static Finfo file_table[] __attribute__((used)) = {
   [FD_STDIN]  = {"stdin", 0, 0, 0, invalid_read, invalid_write},
   [FD_STDOUT] = {"stdout", 0, 0, 0, invalid_read, serial_write},  // 默认函数修改成了串口输出
   [FD_STDERR] = {"stderr", 0, 0, 0, invalid_read, serial_write},  // 同上
+  [FD_EVENT] = {},
+  [FD_DISPINFO] = {},
+  [FD_FB] = {},
 #include "files.h"
-  [FD_EVENT] = {"event_read", 0, 0, 0, events_read, invalid_write},
 };
 
 #define NR_FILES sizeof(file_table) / sizeof(file_table[0]) 
@@ -51,8 +53,8 @@ int fs_open(const char *pathname, int flags, int mode)
   {
     if (strcmp(pathname, file_table[i].name) == 0)
     {
-      file_table[i].read = NULL;
-      file_table[i].write = NULL;
+      // file_table[i].read = NULL;
+      // file_table[i].write = NULL;
       return i;
     }
   }
@@ -100,7 +102,6 @@ size_t fs_read(int fd, void *buf, size_t len)
         }
         read_size = file_table[fd].read(buf, file_table[fd].open_offset, read_size);
         file_table[fd].open_offset += read_size;
-        // printf("read 函数里 read_size是多少 %d\n", read_size);
         return read_size;
     }
 }
@@ -133,7 +134,7 @@ size_t fs_write(int fd, const void *buf, size_t len) {
     }
     else  // stdout 和 stderr 调用
     {
-      // 使用自定义的读函数
+      // 使用自定义的写函数
       write_size = len;
       if (file_table[fd].size && file_table[fd].open_offset + len > file_table[fd].size)
       {
@@ -150,7 +151,7 @@ size_t fs_lseek(int fd, size_t offset, int whence)
 {
   fd_check(fd);
   switch (whence)
- {
+  {
   case SEEK_SET:  // 将 open_offset 设置为 offset
     file_table[fd].open_offset = offset;
     break;
@@ -163,7 +164,7 @@ size_t fs_lseek(int fd, size_t offset, int whence)
   default:
     panic("lseek whence error!");
     break;
- }
+  }
   return file_table[fd].open_offset;  // 返回现在的偏移量
 }
 
@@ -173,4 +174,42 @@ int fs_close(int fd)
 }
 void init_fs() {
   // TODO: initialize the size of /dev/fb
+
+  // 键盘初始化
+  Finfo event_file = 
+  {
+    .name = "/dev/events",    // 文件名称
+    .size = 0,               // 文件大小，单位为字节
+    .disk_offset = 0,         // 偏移量
+    .open_offset = 0,         // 初始打开偏移量
+    .read = events_read,      // 自定义读函数
+    .write = invalid_write    // 自定义写函数
+  };
+  file_table[FD_EVENT] = event_file;
+
+  // /proc/dispinfo 初始化
+  Finfo dispinfo_file = 
+  {
+    .name = "/proc/dispinfo",
+    .size = 0,
+    .disk_offset = 0,
+    .open_offset = 0,
+    .read = dispinfo_read,
+    .write = invalid_write,
+  };
+  file_table[FD_DISPINFO] = dispinfo_file;
+
+
+  // 显存文件初始化
+  Finfo fb_file = 
+  {
+    .name = "/dev/fb",
+    .size = 0,
+    .disk_offset = 0,
+    .open_offset = 0,
+    .read = invalid_read,
+    .write = fb_write,
+  };
+  file_table[FD_FB] = fb_file;
+  printf("fb size : %d\n", file_table[FD_FB].size);
 }
