@@ -128,20 +128,22 @@ void NDL_OpenCanvas(int *w, int *h)
     *w = screen_w;
     *h = screen_h;
   }
+  // 画布大小
   canvas_w = *w;
   canvas_h = *h;
   // 如果有画布，就去中心点绘画，画布 == 0，就在(0,0)开始画
-  canvas_x = (screen_w - canvas_w) / 2;
+  canvas_x = (screen_w - canvas_w) / 2; // 自定义坐标
   canvas_y = (screen_h - canvas_h) / 2;
 }
 
-// pixels是存储照片像素的指针 x, y 是 开始打印的坐标， w h 是需要打印的矩形
+// pixels是存储照片像素的指针 ， w h 是需要打印的矩形（画布大小）
 void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) 
 {
   int fd = open("/dev/fb", 0, 0);
   for (int i = 0; i < h && y + i < canvas_h; ++i) 
   {
     // 找到坐标，每次递增画布的一行
+    // x, y 默认为0所以需要加上我们自定义的坐标才能居中显示 
     lseek(fd, ((y + canvas_y + i) * screen_w + (x + canvas_x)) * 4, SEEK_SET);
     // 每次写入一行，每次递增画布的一行
     write(fd, pixels + i * w, 4 * (w < canvas_w - x ? w : canvas_w - x)); 

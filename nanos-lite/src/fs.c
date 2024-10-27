@@ -53,7 +53,7 @@ int fs_open(const char *pathname, int flags, int mode)
   {
     if (strcmp(pathname, file_table[i].name) == 0)
     {
-      // file_table[i].read = NULL;
+      // file_table[i].read = NULL; // 这两行有时候会导致 自定义 设备读写函数失效，触发理解不了的bug
       // file_table[i].write = NULL;
       return i;
     }
@@ -211,5 +211,4 @@ void init_fs() {
     .write = fb_write,
   };
   file_table[FD_FB] = fb_file;
-  printf("fb size : %d\n", file_table[FD_FB].size);
 }
