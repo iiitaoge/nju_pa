@@ -109,7 +109,7 @@ uint32_t NDL_GetTicks()
 int NDL_PollEvent(char *buf, int len) 
 {
   int fd = open("/dev/events", 0, 0);
-  int re = read(fd, buf, len);
+  int re = read(fd, buf, len);  // 获取键盘码
   return re;
 }
 

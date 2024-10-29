@@ -26,33 +26,14 @@ size_t serial_write(const void *buf, size_t offset, size_t len) {
 
 size_t events_read(void *buf, size_t offset, size_t len) {
   AM_INPUT_KEYBRD_T ev = io_read(AM_INPUT_KEYBRD);
-  // int keycode = io_read(AM_INPUT_KEYBRD).keycode;
-  // printf("os 层接收到 keycode = %d\n", keycode);
   if (ev.keycode == AM_KEY_NONE)
   {
     return 0;
   }
   else
   {
-    // // int keydown = io_read(AM_INPUT_KEYBRD).keydown;
-    // int keydown = ev.keydown;
-    // char *buffer = (char *)buf;  // 转换为 char* 便于指针运算
-
-    // // printf("keydown = %d\n", keydown);
-    // // 复制 "kd " 或 "ku "
-    // if (keydown)
-    //   memcpy(buffer, "kd ", 3);
-    // else
-    //   memcpy(buffer, "ku ", 3);
-
-    // buffer += 3;  // 将指针前移3个字节，指向下一段要复制的位置
-
-    // // 复制 keyname 对应的字符串
-    // strncpy(buffer, keyname[ev.keycode], len - 3);  // 只复制剩余的 len - 3 字节
-    // buffer[len - 3] = '\n';  // 在末尾添加换行符
-    // buffer[len - 2] = '\0';  // 添加字符串终止符
-    // return len;
-    return snprintf((char *)buf, len, "%s %s\n", ev.keydown ? "kd" : "ku", keyname[ev.keycode]);
+    snprintf((char *)buf, len, "%s %s\n", ev.keydown ? "kd" : "ku", keyname[ev.keycode]);
+    return ev.keycode;
   }
 }
 
