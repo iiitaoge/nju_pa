@@ -170,6 +170,7 @@ size_t fs_lseek(int fd, size_t offset, int whence)
 
 int fs_close(int fd)
 {
+  file_table[fd].open_offset = 0; // 关闭一个文件的时候，需要把已经打开的偏移量设置为 0 
   return 0;
 }
 void init_fs() {
