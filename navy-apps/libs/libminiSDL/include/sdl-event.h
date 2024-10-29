@@ -12,19 +12,22 @@
 
 #define enumdef(k) SDLK_##k,
 
+// 按键映射 为 SDLK_
 enum SDL_Keys {
   SDLK_NONE = 0,
   _KEYS(enumdef)
 };
 
+// 按键类型
 enum SDL_EventType {
-  SDL_KEYDOWN,
-  SDL_KEYUP,
-  SDL_USEREVENT,
+  SDL_KEYDOWN,  // 按下按键
+  SDL_KEYUP,  // 松开按键
+  SDL_USEREVENT,  // 用户事件
 };
 
 #define SDL_EVENTMASK(ev_type) (1u << (ev_type))
 
+// 
 enum SDL_EventAction {
   SDL_ADDEVENT,
   SDL_PEEKEVENT,
