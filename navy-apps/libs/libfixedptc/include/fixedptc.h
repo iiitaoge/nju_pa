@@ -92,6 +92,7 @@ typedef	__uint128_t fixedptud;
 #error "FIXEDPT_BITS must be equal to 32 or 64"
 #endif
 
+// 将“整数”部分宽度设为24位。
 #ifndef FIXEDPT_WBITS
 #define FIXEDPT_WBITS	24
 #endif
@@ -102,19 +103,37 @@ typedef	__uint128_t fixedptud;
 
 #define FIXEDPT_VCSID "$Id$"
 
+// 小数部分位数为总位数减去整数部分位数。
 #define FIXEDPT_FBITS	(FIXEDPT_BITS - FIXEDPT_WBITS)
+
+// 定义小数部分的掩码，用于提取定点数的小数部分。
 #define FIXEDPT_FMASK	(((fixedpt)1 << FIXEDPT_FBITS) - 1)
 
+// 将浮点数常量转化为定点数形式，四舍五入处理。
 #define fixedpt_rconst(R) ((fixedpt)((R) * FIXEDPT_ONE + ((R) >= 0 ? 0.5 : -0.5)))
+
+// 将整数转化为定点数，通过左移小数位数来转换。
 #define fixedpt_fromint(I) ((fixedptd)(I) << FIXEDPT_FBITS)
+
+// 从定点数转换回整数，通过右移小数位数去除小数部分。
 #define fixedpt_toint(F) ((F) >> FIXEDPT_FBITS)
+
+// 两个定点数相加
 #define fixedpt_add(A,B) ((A) + (B))
+
+// 两个定点数相减
 #define fixedpt_sub(A,B) ((A) - (B))
+
+// 提取定点数的小数部分。
 #define fixedpt_fracpart(A) ((fixedpt)(A) & FIXEDPT_FMASK)
 
+// 表示固定点数1的值，即左移小数位数，使整数1变成定点格式。
 #define FIXEDPT_ONE	((fixedpt)((fixedpt)1 << FIXEDPT_FBITS))
+// 表示0.5
 #define FIXEDPT_ONE_HALF (FIXEDPT_ONE >> 1)
+// 表示 2
 #define FIXEDPT_TWO	(FIXEDPT_ONE + FIXEDPT_ONE)
+// 表示 PI
 #define FIXEDPT_PI	fixedpt_rconst(3.14159265358979323846)
 #define FIXEDPT_TWO_PI	fixedpt_rconst(2 * 3.14159265358979323846)
 #define FIXEDPT_HALF_PI	fixedpt_rconst(3.14159265358979323846 / 2)
@@ -127,35 +146,35 @@ typedef	__uint128_t fixedptud;
 
 /* Multiplies a fixedpt number with an integer, returns the result. */
 static inline fixedpt fixedpt_muli(fixedpt A, int B) {
-	return 0;
+	return A * B;
 }
 
 /* Divides a fixedpt number with an integer, returns the result. */
 static inline fixedpt fixedpt_divi(fixedpt A, int B) {
-	return 0;
+	return A / B;
 }
 
 /* Multiplies two fixedpt numbers, returns the result. */
 static inline fixedpt fixedpt_mul(fixedpt A, fixedpt B) {
-	return 0;
+	return (A * B) >> FIXEDPT_FBITS;
 }
 
 
 /* Divides two fixedpt numbers, returns the result. */
 static inline fixedpt fixedpt_div(fixedpt A, fixedpt B) {
-	return 0;
+	return (A << FIXEDPT_FBITS) / B;
 }
 
 static inline fixedpt fixedpt_abs(fixedpt A) {
-	return 0;
+	return (A < 0) ? -A : A;
 }
 
 static inline fixedpt fixedpt_floor(fixedpt A) {
-	return 0;
+	return A & ~FIXEDPT_FMASK;
 }
 
 static inline fixedpt fixedpt_ceil(fixedpt A) {
-	return 0;
+	return (A & ~FIXEDPT_FMASK) + (A & FIXEDPT_FMASK ? FIXEDPT_ONE : 0);
 }
 
 /*
