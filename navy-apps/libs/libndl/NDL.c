@@ -110,7 +110,7 @@ int NDL_PollEvent(char *buf, int len)
 {
   int fd = open("/dev/events", 0, 0);
   int re = read(fd, buf, len);  // 获取键盘码
-  return re;
+  return re;  // 返回键盘码
 }
 
 void NDL_OpenCanvas(int *w, int *h) 

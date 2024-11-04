@@ -25,7 +25,7 @@ void init_proc() {
   switch_boot_pcb();
 
   Log("Initializing processes...");
-  naive_uload(NULL, "/bin/nslider");
+  naive_uload(NULL, "/bin/pal");
   // load program here
 
 }

@@ -15,8 +15,8 @@
 #define DEFAULT_AMASK 0xff000000
 
 typedef struct {
-	int16_t x, y;
-	uint16_t w, h;
+    int16_t x, y;      // 矩形左上角坐标
+    uint16_t w, h;     // 矩形的宽度和高度
 } SDL_Rect;
 
 typedef union {
@@ -31,6 +31,7 @@ typedef struct {
 	SDL_Color *colors;
 } SDL_Palette;
 
+// 使 SDL 适应不同的像素格式和像素深度
 typedef struct {
 	SDL_Palette *palette;
 	uint8_t BitsPerPixel;
@@ -40,12 +41,16 @@ typedef struct {
 	uint32_t Rmask, Gmask, Bmask, Amask;
 } SDL_PixelFormat;
 
+/*
+假设一个图像的宽度为 w = 100 像素，并且每个像素为 4 字节（比如 32 位颜色深度），那么：
+pitch 通常是 100 * 4 = 400 字节，表示一行数据的实际字节数。
+*/
 typedef struct {
-	uint32_t flags;
-	SDL_PixelFormat *format;
-	int w, h;
-	uint16_t pitch;
-	uint8_t *pixels;
+    uint32_t flags;          // 表面标志
+    SDL_PixelFormat *format; // 像素格式（颜色格式）
+    int w, h;                // 表面的宽度和高度
+    uint16_t pitch;          // 每行像素字节数
+    uint8_t *pixels;         // 像素数据 (8位 or 32位)
 } SDL_Surface;
 
 SDL_Surface* SDL_CreateRGBSurfaceFrom(void *pixels, int width, int height, int depth,
