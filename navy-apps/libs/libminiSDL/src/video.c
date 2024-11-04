@@ -4,16 +4,108 @@
 #include <string.h>
 #include <stdlib.h>
 
+/*
+SDL_Surface *src: 源图像的指针。
+SDL_Rect *srcrect: 指定源图像的矩形区域，定义要拷贝的区域，若为 NULL 则表示整个源图像。
+SDL_Surface *dst: 目标图像的指针，通常是屏幕缓冲区。
+SDL_Rect *dstrect: 指定目标图像的矩形区域，表示源图像将拷贝到目标图像的哪个位置。如果为 NULL，则默认放置在左上角。
+*/
 void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect) {
   assert(dst && src);
   assert(dst->format->BitsPerPixel == src->format->BitsPerPixel);
+  assert(dst->format->BytesPerPixel == 1 || dst->format->BytesPerPixel == 4);
+  int swidth = src->w;
+  int sheight = src->h;
+  int sw = (srcrect == NULL ? swidth : srcrect->w);
+  int sh = (srcrect == NULL ? sheight : srcrect->h);
+  int sstart = (srcrect == NULL ? 0 : srcrect->y * swidth + srcrect->x); // 如果srcrect为NULL，就把sstart设为0
+  int dwidth = dst->w;
+  int dheight = dst->h;
+  // 不需要具体的 x, y x与y只是为了确定起点在哪
+  int dstart = (dstrect == NULL ? 0 : dstrect->y * dwidth + dstrect->x); // 如果dstrect为NULL，就把dstart设为0
+  for (int i = 0; i < sh; i++)
+  {
+    if (dst->format->BytesPerPixel == 1) // 像素为 1字节
+    {
+      memcpy(dst->pixels + dstart + i * dwidth, src->pixels + sstart + i * swidth, sw);
+    }
+    else  // 像素为 4 字节
+    {
+      memcpy((uint32_t *)dst->pixels + dstart + i * dwidth, (uint32_t *)src->pixels + sstart + i * swidth, 4 * sw);
+    }
+  }
 }
-
+/*
+SDL_Surface *dst: 目标图像的指针，即要填充的表面。
+SDL_Rect *dstrect: 指定填充的矩形区域，若为 NULL 则填充整个目标表面。
+uint32_t color: 指定填充的颜色，颜色格式通常由目标表面的 SDL_PixelFormat 定义（例如 RGB、RGBA）。
+*/
 void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
+  assert(dst);
+  assert(dst->format->BytesPerPixel == 1 || dst->format->BytesPerPixel == 4);
+  int width = dst->w;
+  int height = dst->h;
+  // dstrect为NULL时，把整个dst填充为color
+  int w = (dstrect == NULL ? width : (int)dstrect->w);                 // 如果dstrect为NULL，就把w设为width
+  int h = (dstrect == NULL ? height : (int)dstrect->h);                // 如果dstrect为NULL，就把h设为height
+  int start = (dstrect == NULL ? 0 : dstrect->y * width + dstrect->x); // 如果dstrect为NULL，就把start设为0
+  for (int i = 0; i < h; ++i)
+  {
+    if (dst->format->BytesPerPixel == 1)
+    {
+      //memset(dst->pixels + start + i * width, color, w);
+      SDL_Color c;
+      c.a = (color >> 24) & 0xff;
+      c.r = (color >> 16) & 0xff;
+      c.g = (color >> 8) & 0xff;
+      c.b = color & 0xff;
+      for (int j = 0; j < w; ++j)
+      {
+        dst->format->palette->colors[dst->pixels[start + i * width + j]] = c;
+      }
+    }
+    else
+    {
+      for (int j = 0; j < w; ++j)
+      {
+        dst->pixels[4 * (start + i * width + j)] = color & 0xff;
+        dst->pixels[4 * (start + i * width + j) + 1] = (color >> 8) & 0xff;
+        dst->pixels[4 * (start + i * width + j) + 2] = (color >> 16) & 0xff;
+        dst->pixels[4 * (start + i * width + j) + 3] = (color >> 24) & 0xff;
+      }
+    }
+  }
 }
 
+
+// 如果 ' x '， ' y '， ' w ' 和 ' h ' 均为 0， SDL_UpdateRect 将更新整个屏幕。
 void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
-  NDL_DrawRect(s->pixels, x, y, s->w, s->h);
+  if (x == 0 && y == 0 && w == 0 && h == 0)
+  {
+    w = s->w;
+    h = s->h;
+  }
+  uint32_t *pixels = malloc(w * h * sizeof(uint32_t));
+  int pos = 0;
+  int start = y * s->w + x;
+  for (int i = 0; i < h; ++i)
+  {
+    for (int j = 0; j < w; ++j)
+    {
+      int index = i * s->w + j;
+      if (s->format->BytesPerPixel == 1)  // 启用调色板
+      {
+        SDL_Color color = s->format->palette->colors[s->pixels[start + index]];
+        pixels[pos++] = color.a << 24 | color.r << 16 | color.g << 8 | color.b;
+      }
+      else
+      {
+        pixels[pos++] = s->pixels[start + 4 * index + 3] << 24 | s->pixels[start + 4 * index + 2] << 16 | s->pixels[start + 4 * index + 1] << 8 | s->pixels[start + 4 * index];
+      }
+    }
+  }
+  NDL_DrawRect(pixels, x, y, w, h);
+  free(pixels);
 }
 
 // APIs below are already implemented.
@@ -130,7 +222,7 @@ void SDL_SetPalette(SDL_Surface *s, int flags, SDL_Color *colors, int firstcolor
   assert(s->format->palette);
   assert(firstcolor == 0);
 
-  s->format->palette->ncolors = ncolors;
+  s->format->palette->ncolors = ncolors;  // 这里设置了 palette
   memcpy(s->format->palette->colors, colors, sizeof(SDL_Color) * ncolors);
 
   if(s->flags & SDL_HWSURFACE) {
@@ -194,8 +286,10 @@ uint32_t SDL_MapRGBA(SDL_PixelFormat *fmt, uint8_t r, uint8_t g, uint8_t b, uint
 }
 
 int SDL_LockSurface(SDL_Surface *s) {
+  assert(0);
   return 0;
 }
 
 void SDL_UnlockSurface(SDL_Surface *s) {
+  assert(0);
 }
