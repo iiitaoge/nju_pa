@@ -11,8 +11,39 @@ SDL_Surface* IMG_Load_RW(SDL_RWops *src, int freesrc) {
   return NULL;
 }
 
+
+// 加载IMG
 SDL_Surface* IMG_Load(const char *filename) {
-  return NULL;
+    FILE *fp = fopen(filename, "rb");
+    if (!fp) {
+        perror("Failed to open file");
+        return NULL;
+    }
+
+    // 获取文件大小
+    fseek(fp, 0, SEEK_END);
+    long size = ftell(fp);
+    fseek(fp, 0, SEEK_SET);  // 重新定位到文件开始位置
+
+    // !!! 动态分配内存缓冲区 不要用数组当内存
+    char *buf = (char *)malloc(size);
+    if (!buf) {
+        fclose(fp);
+        perror("Failed to allocate memory");
+        return NULL;
+    }
+
+    // 读取文件到缓冲区
+    fread(buf, 1, size, fp);
+
+    // 调用 STBIMG_LoadFromMemory() 将缓冲区数据转为 SDL_Surface
+    SDL_Surface *surface = STBIMG_LoadFromMemory(buf, size);
+
+    // 关闭文件并释放缓冲区
+    fclose(fp);
+    free(buf);
+
+    return surface;
 }
 
 int IMG_isPNG(SDL_RWops *src) {
