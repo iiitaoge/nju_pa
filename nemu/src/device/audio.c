@@ -35,17 +35,28 @@ enum {
 
 static uint8_t *sbuf = NULL;
 static uint32_t *audio_base = NULL;
+static uint32_t sbuf_pos = 0; // 缓冲区当前位置
 
+SDL_AudioSpec s = {};
+
+// SDL回调函数
 static void audio_play(void *userdata, uint8_t *stream, int len) {
-  int nread = len;
-  if (len > audio_base[reg_count]) nread = audio_base[reg_count];
-  // int nread = len < CONFIG_SB_SIZE ? len : CONFIG_SB_SIZE;
-  memcpy(stream, sbuf, nread);
-  audio_base[reg_count] -= nread;
-  if (nread < len) {
-    memset(stream + nread, 0, len - nread);  // 用静音填充剩余数据
+  memset(stream, 0, len);
+  uint32_t user_cent = audio_base[reg_count];
+  if (len > user_cent)
+    len = user_cent;
+  uint32_t sbuf_size = audio_base[reg_sbuf_size] / sizeof(uint8_t);
+  if ((sbuf_pos + len) > sbuf_size)
+  {
+    SDL_MixAudio(stream, sbuf + sbuf_pos, sbuf_size - sbuf_pos, SDL_MIX_MAXVOLUME);
+    SDL_MixAudio(stream + (sbuf_size - sbuf_pos), sbuf, len - (sbuf_size - sbuf_pos), SDL_MIX_MAXVOLUME);
   }
-
+  else
+  {
+    SDL_MixAudio(stream, sbuf + sbuf_pos, len, SDL_MIX_MAXVOLUME);
+  }
+  sbuf_pos = (sbuf_pos + len) % sbuf_size;
+  audio_base[reg_count] -= len; // 缓冲区增加count大小
 }
 
 // 声卡的回调函数
@@ -53,22 +64,20 @@ static void audio_io_handler(uint32_t offset, int len, bool is_write) {
   if (audio_base[reg_init])
   {
     init_SDL();
+    audio_base[reg_init] = 0;
   }
 }
 
 static void init_SDL()
 {
   // 设置音频设备参数
-  SDL_AudioSpec s = {};
   s.format = AUDIO_S16SYS;  // 假设系统中音频数据的格式总是使用16位有符号数来表示
   s.userdata = NULL;        // 不使用
-  s.silence = 0;
   s.freq = audio_base[reg_freq];
   s.channels = audio_base[reg_channels];
   s.samples = audio_base[reg_samples];
   s.callback = audio_play;
 
-  audio_base[reg_init] = 0;
   int ret = SDL_InitSubSystem(SDL_INIT_AUDIO);
   if (ret == 0) 
   {
