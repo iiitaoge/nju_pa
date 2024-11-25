@@ -79,7 +79,6 @@ int SDL_PollEvent(SDL_Event *ev)
   *ev = eventQueue.events[eventQueue.head];
   eventQueue.head = (eventQueue.head + 1) % MAX_EVENT;
   eventQueue.count--;
-  printf("队列不为空\n");
   if (keycode)
   {
     SDL_PushEvent(ev);

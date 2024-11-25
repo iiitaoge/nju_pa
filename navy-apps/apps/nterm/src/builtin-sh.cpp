@@ -22,7 +22,11 @@ static void sh_prompt() {
   sh_printf("sh> ");
 }
 
+// 实现命令解析
 static void sh_handle_cmd(const char *cmd) {
+  char * trimmed_cmd = (char*)cmd;
+  trimmed_cmd[strlen(cmd) - 1] = '\0';  // 去掉cmd因为sh回车造成的尾部'\n'符号
+  execvp(trimmed_cmd, NULL);
 }
 
 void builtin_sh_run() {

@@ -4,6 +4,7 @@
 // 引入了menuconfig设置的 STRACE
 #include "../../../nemu/include/generated/autoconf.h"
 #include <fs.h>
+#include <proc.h>
 
 // #include <sys/time.h>
 #include <stdint.h>
@@ -22,6 +23,7 @@ static void _SYS_read(Context *c);
 static void _SYS_lseek(Context *c);
 static void _SYS_close(Context *c);
 static void _SYS_gettimeofday(Context *c);
+static void _SYS_execve(Context *c);
 
 void do_syscall(Context *c) {
   uintptr_t a[4];
@@ -30,7 +32,7 @@ void do_syscall(Context *c) {
   // a[0] 是 yield 这样的编号，用来识别 是什么系统调用
 
 #ifdef CONFIG_STRACE
-  Log("系统调用编号为 %d", a[0]);
+  Log("系统调用编号为 %s\n", syscall_names[a[0]]);
 #endif
 
   switch (a[0]) {
@@ -58,14 +60,19 @@ void do_syscall(Context *c) {
     case SYS_gettimeofday:
       _SYS_gettimeofday(c);
       break;
+    case SYS_execve:
+      _SYS_execve(c);
+      break;
     default: panic("Unhandled syscall ID = %d", a[0]);
   }
 }
 
 static void _SYS_exit(Context *c)
 {
-  c->GPRx=0;
-  halt(c->GPRx);
+  c->GPRx = 0;
+  // halt(c->GPRx);
+  c->GPR2 = (uint32_t)"/bin/nterm";
+  _SYS_execve(c);
 }
 
 static void _SYS_write(Context *c)
@@ -128,5 +135,12 @@ static void _SYS_gettimeofday(Context *c)
   __uint64_t time = io_read(AM_TIMER_UPTIME).us;
   tv->tv_usec = (time % 1000000);
   tv->tv_sec = (time / 1000000);
+  c->GPRx = 0;
+}
+
+static void _SYS_execve(Context *c)
+{
+  char * fname = (char *)c->GPR2;
+  naive_uload(NULL, fname);
   c->GPRx = 0;
 }

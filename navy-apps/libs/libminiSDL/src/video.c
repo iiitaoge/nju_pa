@@ -51,9 +51,8 @@ void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
   int start = (dstrect == NULL ? 0 : dstrect->y * width + dstrect->x); // 如果dstrect为NULL，就把start设为0
   for (int i = 0; i < h; ++i)
   {
-    if (dst->format->BytesPerPixel == 1)
+    if (dst->format->BytesPerPixel == 1)  // 启用调色板
     {
-      //memset(dst->pixels + start + i * width, color, w);
       SDL_Color c;
       c.a = (color >> 24) & 0xff;
       c.r = (color >> 16) & 0xff;
@@ -122,7 +121,7 @@ static inline int maskToShift(uint32_t mask) {
 }
 
 SDL_Surface* SDL_CreateRGBSurface(uint32_t flags, int width, int height, int depth,
-    uint32_t Rmask, uint32_t Gmask, uint32_t Bmask, uint32_t Amask) {
+  uint32_t Rmask, uint32_t Gmask, uint32_t Bmask, uint32_t Amask) {
   assert(depth == 8 || depth == 32);
   SDL_Surface *s = malloc(sizeof(SDL_Surface));
   assert(s);
